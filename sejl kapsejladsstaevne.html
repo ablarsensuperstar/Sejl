@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Sejl! – Kapsejladsstævne</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --abyss:#06243E; --navy:#0E3A5E; --sea:#21A6C0; --foam:#EAF6F8;
+    --sun:#FFC93C; --flag:#FF5C5C; --grass:#5BD17A; --ink:#06243E;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:'Nunito',system-ui,sans-serif;
+    background:radial-gradient(1200px 600px at 50% -10%, #1d5d86 0%, rgba(29,93,134,0) 60%),
+      linear-gradient(180deg,#0c3756 0%, var(--abyss) 100%);
+    color:var(--foam);min-height:100%;overflow-x:hidden;
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:14px 16px 40px;}
+  header.top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 2px 14px;}
+  .logo{font-family:'Fredoka';font-weight:700;font-size:clamp(24px,6vw,38px);display:flex;align-items:center;gap:10px;line-height:1;}
+  .logo .badge{background:var(--sun);color:var(--ink);border-radius:12px;padding:2px 10px;transform:rotate(-4deg);box-shadow:0 4px 0 #d6a418;}
+  .logo small{font-family:'Nunito';font-weight:800;font-size:.34em;opacity:.85;display:block;letter-spacing:2px;}
+  .btn-back{border:0;cursor:pointer;font-family:'Fredoka';font-weight:600;font-size:15px;background:rgba(255,255,255,.12);
+    color:var(--foam);padding:9px 16px;border-radius:999px;transition:transform .08s,background .15s;}
+  .btn-back:hover{background:rgba(255,255,255,.22);}
+  .btn-back:active{transform:scale(.96);}
+  .hidden{display:none !important;}
+
+  .hero{text-align:center;padding:8px 0 6px;}
+  .hero h1{font-family:'Fredoka';font-weight:700;font-size:clamp(28px,8vw,52px);margin:6px 0;line-height:1.02;}
+  .hero h1 .hi{color:var(--sun);}
+  .hero p{font-size:clamp(15px,3.6vw,19px);max-width:580px;margin:0 auto;opacity:.92;font-weight:600;}
+  .cards{display:grid;grid-template-columns:1fr;gap:16px;margin-top:24px;}
+  @media(min-width:560px){.cards{grid-template-columns:1fr 1fr;}}
+  @media(min-width:880px){.cards{grid-template-columns:repeat(4,1fr);}}
+  .card{cursor:pointer;border:0;text-align:left;color:var(--ink);border-radius:22px;padding:22px 20px 20px;position:relative;
+    overflow:hidden;font-family:'Nunito';box-shadow:0 12px 26px rgba(0,0,0,.28);transition:transform .12s,box-shadow .12s;}
+  .card:hover{transform:translateY(-4px);box-shadow:0 18px 32px rgba(0,0,0,.34);}
+  .card:active{transform:translateY(-1px) scale(.99);}
+  .card .emoji{font-size:40px;display:block;margin-bottom:10px;}
+  .card h3{font-family:'Fredoka';font-weight:700;font-size:23px;margin:0 0 6px;}
+  .card p{margin:0;font-weight:600;font-size:14.5px;opacity:.85;}
+  .card.c1{background:linear-gradient(160deg,#7fe3f0,#21A6C0);}
+  .card.c2{background:linear-gradient(160deg,#ffe08a,var(--sun));}
+  .card.c3{background:linear-gradient(160deg,#a8f0bd,var(--grass));}
+  .card.c4{background:linear-gradient(160deg,#ffc2d6,#ff8fb0);}
+  .card .go{position:absolute;right:16px;bottom:16px;font-family:'Fredoka';font-weight:700;background:rgba(255,255,255,.55);border-radius:999px;padding:6px 12px;font-size:13px;}
+  .menu-foot{text-align:center;margin-top:24px;font-weight:600;opacity:.7;font-size:13.5px;line-height:1.5;}
+
+  /* RACE */
+  .stage{position:relative;width:100%;max-width:600px;margin:4px auto 0;}
+  .canvas-frame{position:relative;width:100%;aspect-ratio:1/1;border-radius:22px;overflow:hidden;
+    box-shadow:0 14px 30px rgba(0,0,0,.35);border:3px solid rgba(255,255,255,.12);background:#0c4a68;}
+  canvas{display:block;width:100%;height:100%;}
+  .hud{position:absolute;inset:0;pointer-events:none;}
+  .hud .topbar{position:absolute;left:10px;right:10px;top:10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+  .pill{font-family:'Fredoka';font-weight:600;font-size:13px;color:var(--ink);background:rgba(255,255,255,.9);
+    border-radius:999px;padding:5px 11px;box-shadow:0 4px 10px rgba(0,0,0,.18);}
+  .pill.big{font-size:19px;padding:6px 14px;}
+  .pill .lab{font-family:'Nunito';font-weight:800;font-size:9px;letter-spacing:1px;opacity:.6;display:block;line-height:1;margin-bottom:1px;}
+  .instr{position:absolute;left:50%;top:54px;transform:translateX(-50%);text-align:center;width:90%;}
+  .instr span{display:inline-block;font-family:'Fredoka';font-weight:600;font-size:14.5px;color:var(--foam);
+    background:rgba(6,36,62,.7);padding:5px 14px;border-radius:999px;}
+  .banner{position:absolute;left:50%;top:23%;transform:translateX(-50%);text-align:center;width:88%;}
+  .banner .msg{display:inline-block;font-family:'Fredoka';font-weight:700;font-size:clamp(18px,5vw,26px);
+    background:rgba(6,36,62,.82);padding:11px 20px;border-radius:16px;line-height:1.15;box-shadow:0 8px 20px rgba(0,0,0,.3);}
+  .banner .msg.warn{background:rgba(255,92,92,.95);}
+  .banner .msg.good{background:rgba(91,209,122,.95);color:var(--ink);}
+  .tip{position:absolute;left:10px;right:10px;bottom:10px;text-align:center;}
+  .tip span{display:inline-block;background:rgba(255,201,60,.95);color:var(--ink);font-weight:800;font-size:13.5px;
+    padding:7px 13px;border-radius:12px;max-width:100%;box-shadow:0 4px 12px rgba(0,0,0,.22);}
+  .coach{position:absolute;left:10px;right:10px;bottom:44px;text-align:center;}
+  .coach span{display:inline-block;background:rgba(6,36,62,.85);color:var(--foam);font-family:'Fredoka';font-weight:600;
+    font-size:14px;padding:7px 14px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.25);}
+  .coach span.good{background:rgba(91,209,122,.94);color:var(--ink);}
+  .coach span.warn{background:rgba(255,92,92,.95);}
+  .drillgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
+  .drillbtn{border:0;cursor:pointer;font-family:'Fredoka';font-weight:700;font-size:16px;color:var(--ink);
+    background:linear-gradient(180deg,#fff,#e6f2f5);border-radius:14px;padding:16px 10px;
+    box-shadow:0 5px 0 #9fc0c9,0 9px 16px rgba(0,0,0,.2);transition:transform .05s,box-shadow .05s;}
+  .drillbtn:active{transform:translateY(4px);box-shadow:0 1px 0 #9fc0c9;}
+
+  .overlay{position:absolute;inset:0;background:rgba(6,36,62,.86);display:flex;align-items:center;justify-content:center;
+    padding:18px;text-align:center;backdrop-filter:blur(3px);}
+  .panel{max-width:430px;width:100%;}
+  .panel .eyebrow{font-family:'Nunito';font-weight:800;letter-spacing:2px;font-size:12px;color:var(--sun);}
+  .panel h2{font-family:'Fredoka';font-size:clamp(24px,6vw,32px);margin:6px 0 4px;}
+  .panel p{font-weight:600;font-size:14.5px;opacity:.92;margin:6px 0;line-height:1.45;}
+  .panel .place{font-family:'Fredoka';font-size:50px;line-height:1;margin:6px 0;color:var(--sun);}
+  .standings{width:100%;border-collapse:collapse;margin:12px 0 6px;font-weight:700;font-size:14px;}
+  .standings th{font-family:'Nunito';font-weight:800;font-size:10px;letter-spacing:1px;opacity:.6;text-align:right;padding:4px 6px;}
+  .standings th:first-child{text-align:left;}
+  .standings td{padding:7px 6px;border-bottom:1px solid rgba(255,255,255,.12);text-align:right;}
+  .standings td:first-child{text-align:left;}
+  .standings .me{color:var(--sun);}
+  .standings .disc{opacity:.45;text-decoration:line-through;}
+  .actionbtn{border:0;cursor:pointer;font-family:'Fredoka';font-weight:700;font-size:18px;color:var(--ink);background:var(--sun);
+    border-radius:16px;padding:13px 26px;margin-top:8px;box-shadow:0 6px 0 #d6a418,0 10px 18px rgba(0,0,0,.25);transition:transform .05s,box-shadow .05s;}
+  .actionbtn:active{transform:translateY(4px);box-shadow:0 2px 0 #d6a418;}
+  .ghostbtn{border:0;cursor:pointer;font-family:'Fredoka';font-weight:600;font-size:15px;color:var(--foam);
+    background:rgba(255,255,255,.14);border-radius:14px;padding:11px 18px;margin:8px 6px 0;}
+
+  /* control deck */
+  .deck{max-width:600px;margin:12px auto 0;display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:auto auto;gap:10px;}
+  .deckbtn{border:0;cursor:pointer;font-family:'Fredoka';font-weight:700;color:var(--ink);border-radius:16px;
+    background:linear-gradient(180deg,#fff,#dfeef2);box-shadow:0 5px 0 #9fc0c9,0 9px 16px rgba(0,0,0,.22);
+    transition:transform .05s,box-shadow .05s;user-select:none;touch-action:manipulation;padding:12px 6px;}
+  .deckbtn:active{transform:translateY(4px);box-shadow:0 1px 0 #9fc0c9;}
+  .deckbtn .sub{display:block;font-family:'Nunito';font-weight:800;font-size:10px;letter-spacing:1px;opacity:.6;}
+  .deckbtn .arr{font-size:24px;line-height:.9;}
+  .deckbtn.steer{grid-row:2;font-size:17px;padding:16px 6px;}
+  .deckbtn.bum{grid-row:1;grid-column:2;background:linear-gradient(180deg,#ffe08a,var(--sun));box-shadow:0 5px 0 #d6a418,0 9px 16px rgba(0,0,0,.22);font-size:18px;}
+  .deckbtn.bum.pulse{animation:pulse .7s infinite;}
+  @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.06);box-shadow:0 5px 0 #d6a418,0 0 0 6px rgba(255,201,60,.35);}}
+  .deckbtn.sheet{grid-row:1;}
+  .deckbtn.steerL{grid-column:1;} .deckbtn.steerR{grid-column:3;}
+  .deckbtn.sheetL{grid-column:1;} .deckbtn.sheetR{grid-column:3;}
+  .ctl-hint{text-align:center;opacity:.62;font-weight:600;font-size:12px;margin-top:9px;line-height:1.5;}
+
+  /* learn */
+  .lessons{display:grid;gap:14px;margin-top:10px;}
+  .lesson{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:16px 16px 14px;
+    display:grid;grid-template-columns:96px 1fr;gap:14px;align-items:center;}
+  @media(max-width:560px){.lesson{grid-template-columns:1fr;}.lesson .figure{margin:0 auto;}}
+  .lesson .figure{width:96px;height:96px;border-radius:14px;background:linear-gradient(180deg,#0d4d6e,#0a3450);display:flex;align-items:center;justify-content:center;font-size:46px;}
+  .lesson h3{font-family:'Fredoka';font-size:20px;margin:0 0 5px;color:var(--sun);}
+  .lesson p{margin:0;font-weight:600;font-size:14.5px;line-height:1.45;opacity:.95;}
+  .lesson .tag{display:inline-block;background:rgba(255,201,60,.2);color:var(--sun);font-weight:800;font-size:10px;letter-spacing:1px;padding:3px 9px;border-radius:999px;margin-top:9px;}
+
+  /* quiz */
+  .quizbox{max-width:620px;margin:6px auto 0;}
+  .qprogress{font-weight:800;letter-spacing:1px;opacity:.7;font-size:13px;text-align:center;margin-bottom:8px;}
+  .qcard{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:22px;}
+  .qcard h3{font-family:'Fredoka';font-size:22px;margin:0 0 16px;line-height:1.2;}
+  .opt{display:block;width:100%;text-align:left;border:2px solid rgba(255,255,255,.18);background:rgba(255,255,255,.04);
+    color:var(--foam);font-family:'Nunito';font-weight:700;font-size:16px;border-radius:14px;padding:13px 16px;margin-bottom:10px;cursor:pointer;transition:background .12s,border-color .12s,transform .06s;}
+  .opt:hover{background:rgba(255,255,255,.1);}
+  .opt:active{transform:scale(.99);}
+  .opt.correct{background:rgba(91,209,122,.22);border-color:var(--grass);}
+  .opt.wrong{background:rgba(255,92,92,.2);border-color:var(--flag);}
+  .opt.lock{cursor:default;}
+  .qfeedback{margin-top:12px;font-weight:700;font-size:15px;min-height:22px;line-height:1.4;}
+  .qfeedback.ok{color:var(--grass);} .qfeedback.no{color:#ffd1d1;}
+  .qnext{margin-top:14px;text-align:right;}
+  .qresult{text-align:center;}
+  .qresult .score{font-family:'Fredoka';font-size:54px;color:var(--sun);margin:6px 0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="logo"><span class="badge">SEJL!</span><span><small>KAPSEJLADS-SKOLE</small></span></div>
+    <button class="btn-back hidden" id="backBtn">‹ Menu</button>
+  </header>
+
+  <!-- MENU -->
+  <section id="screen-menu">
+    <div class="hero">
+      <h1>Bliv <span class="hi">kapsejlads&shy;mester</span> i optimist</h1>
+      <p>Sejl et helt stævne på 6 sejladser. Styr med ror og skøde, krydse op mod vinden, bum rundt om mærkerne – og kom først i mål!</p>
+    </div>
+    <div class="cards">
+      <button class="card c4" data-go="train"><span class="emoji">🎏</span><h3>Træning</h3><p>Øv trim, tegn på sejlet, stagvending og bumning – uden pres.</p><span class="go">Øv ›</span></button>
+      <button class="card c1" data-go="race"><span class="emoji">🏁</span><h3>Sejl et stævne</h3><p>6 sejladser, der bliver sværere. Træk det dårligste fra.</p><span class="go">Start ›</span></button>
+      <button class="card c2" data-go="learn"><span class="emoji">🧭</span><h3>Lær det</h3><p>Vind, skøde, ror, start, bumning og vindspring.</p><span class="go">Læs ›</span></button>
+      <button class="card c3" data-go="quiz"><span class="emoji">🏆</span><h3>Quiz</h3><p>Test hvad du ved. Kan du få fuldt hus?</p><span class="go">Start ›</span></button>
+    </div>
+    <p class="menu-foot">Tastatur: ← → ror · ↑ hal skøde ind · ↓ slæk skøde ud · mellemrum = bum.<br>På mobil/iPad: brug knapperne under banen.</p>
+  </section>
+
+  <!-- RACE -->
+  <section id="screen-race" class="hidden">
+    <div class="stage">
+      <div class="canvas-frame">
+        <canvas id="cv"></canvas>
+        <div class="hud">
+          <div class="topbar">
+            <div class="pill big" id="hudTimer"><span class="lab">START OM</span>0:20</div>
+            <div class="pill" id="hudPos"><span class="lab">PLADS</span>–</div>
+            <div class="pill" id="hudSpeed"><span class="lab">FART</span>0%</div>
+          </div>
+          <div class="instr" id="hudInstr"></div>
+          <div class="banner" id="hudBanner"></div>
+          <div class="coach hidden" id="hudCoach"></div>
+          <div class="tip" id="hudTip"></div>
+        </div>
+        <div class="overlay" id="introOv"></div>
+        <div class="overlay hidden" id="resultOv"></div>
+      </div>
+    </div>
+    <div class="deck" id="deck">
+      <button class="deckbtn sheet sheetL" id="btnOut"><span class="arr">▽</span><span class="sub">SLÆK SKØDE</span></button>
+      <button class="deckbtn bum" id="btnBum">BUM!<span class="sub">SKIFT SEJL</span></button>
+      <button class="deckbtn sheet sheetR" id="btnIn"><span class="arr">△</span><span class="sub">HAL SKØDE IND</span></button>
+      <button class="deckbtn steer steerL" id="btnLeft"><span class="arr">↰</span><span class="sub">ROR BABORD</span></button>
+      <button class="deckbtn steer steerR" id="btnRight"><span class="arr">↱</span><span class="sub">ROR STYRBORD</span></button>
+    </div>
+    <p class="ctl-hint">Drej blødt – for meget ror bremser farten. Slæk skøden, når du bærer af; hal ind, når du luffer op.</p>
+  </section>
+
+  <!-- LEARN -->
+  <section id="screen-learn" class="hidden">
+    <div class="hero"><h1>Lær <span class="hi">det</span></h1><p>Seks ting, der gør dig hurtigere end de andre.</p></div>
+    <div class="lessons" id="lessonList"></div>
+    <p class="menu-foot">Klar? Tryk “Menu” og vælg <b>Sejl et stævne</b>.</p>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="screen-quiz" class="hidden">
+    <div class="hero"><h1>Quiz <span class="hi">tid!</span></h1></div>
+    <div class="quizbox" id="quizBox"></div>
+  </section>
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   SEJL! v2 – kapsejladsstævne med rigtig bane og fysik
+   ============================================================ */
+
+/* ---------- navigation ---------- */
+const screens={menu:el('screen-menu'),race:el('screen-race'),learn:el('screen-learn'),quiz:el('screen-quiz')};
+const backBtn=el('backBtn');
+function el(id){return document.getElementById(id);}
+let MODE='race';
+function show(name){
+  const sc=(name==='train')?'race':name;
+  for(const k in screens) screens[k].classList.toggle('hidden', k!==sc);
+  backBtn.classList.toggle('hidden', name==='menu');
+  if(name==='race'){ MODE='race'; startSeries(); }
+  else if(name==='train'){ MODE='train'; startTraining(); }
+  else stopRace();
+  if(name==='learn') renderLessons();
+  if(name==='quiz') startQuiz();
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.go)));
+backBtn.addEventListener('click',()=>show('menu'));
+
+/* ---------- vinkel-matematik ---------- */
+const RAD=Math.PI/180;
+function norm360(d){d%=360;if(d<0)d+=360;return d;}
+function angleDiff(a,b){let d=norm360(a-b);if(d>180)d-=360;return d;}
+function lerpAngle(a,b,t){return a+angleDiff(b,a)*t;}
+function clamp(v,lo,hi){return v<lo?lo:(v>hi?hi:v);}
+
+/* polar: fart 0..1 ved sand vindvinkel */
+function polar(twa){
+  twa=Math.abs(twa);
+  if(twa<32) return (twa/32)*0.08;
+  if(twa<45) return 0.08+((twa-32)/13)*0.64;
+  if(twa<90) return 0.72+((twa-45)/45)*0.28;
+  if(twa<150) return 1.0-((twa-90)/60)*0.27;
+  return 0.73-((twa-150)/30)*0.18;
+}
+/* ideel skødevinkel (grader sejlet er ude) for en given vindvinkel */
+function idealSheet(atwa){ return clamp((atwa-18)*0.62, 4, 86); }
+
+/* ============================================================
+   BANE (verdenskoordinater, x:6..94  y:5..97)
+   ============================================================ */
+const DBOAT={x:58,y:82};                 // dommerbåd
+const PIN_START={x:42,y:82};             // startens bagbordsende
+const PIN_FIN={x:74,y:82};               // målets styrbordsende
+const START_MID={x:50,y:82};
+const FINISH_MID={x:66,y:82};
+const MARKS={
+  top: {x:50,y:12,r:5,name:'Topmærke'},
+  slag:{x:10,y:48,r:5,name:'Slagmærke'},
+  bund:{x:50,y:118,r:5,name:'Bundmærke'},
+};
+const LEGTGT=[MARKS.top, MARKS.slag, MARKS.bund, FINISH_MID];
+const LEG_INSTR=[
+  'Kryds op til topmærket',
+  'Læns til slagmærket – klar til at bumme',
+  'Læns videre til bundmærket',
+  'Kryds i mål forbi dommerbåden',
+];
+
+const MAX_SPEED=9.0, BASE_TURN=98, VIEW=48;
+
+/* ============================================================
+   NIVEAUER (6 sejladser, stigende sværhedsgrad)
+   ============================================================ */
+const LEVELS=[
+  {name:'Rolig vind', desc:'Stabil vind og blide vindspring. Perfekt til at lære roret og skøden.', shiftAmp:7, shiftEvery:11, gust:0.05, aiSkill:[0.85,0.89,0.92], sheetTol:22, startTime:20},
+  {name:'Let brise',  desc:'Lidt flere vindspring. Hold øje med vinden.', shiftAmp:11, shiftEvery:9, gust:0.08, aiSkill:[0.89,0.92,0.95], sheetTol:18, startTime:18},
+  {name:'Frisk vind', desc:'Vinden drejer mere. Brug krydset klogt.', shiftAmp:15, shiftEvery:8, gust:0.11, aiSkill:[0.92,0.95,0.97], sheetTol:15, startTime:16},
+  {name:'Hård vind',  desc:'Store vindspring og vindpust. Trim præcist.', shiftAmp:19, shiftEvery:7, gust:0.15, aiSkill:[0.95,0.97,0.985], sheetTol:12, startTime:15},
+  {name:'Kuling',     desc:'Vild vind. Blødt ror og skarp skøde afgør det.', shiftAmp:24, shiftEvery:6, gust:0.19, aiSkill:[0.97,0.985,0.995], sheetTol:10, startTime:14},
+  {name:'Mesterskab', desc:'Alt på spil mod de bedste sejlere.', shiftAmp:28, shiftEvery:5.5, gust:0.22, aiSkill:[0.985,0.995,1.0], sheetTol:8, startTime:12},
+];
+const RIVALS=['Laura','Mads','Sofie'];
+const RIVAL_COLORS=['#5BD17A','#FF8A5C','#C792FF'];
+const RIVAL_SAILS=['#dff7e6','#ffe2d4','#ece0ff'];
+
+/* ============================================================
+   STÆVNE-TILSTAND
+   ============================================================ */
+let REG=null;
+function startSeries(){
+  REG={raceNo:1, total:6, points:{}, finishes:{}};
+  for(const n of ['Dig',...RIVALS]){ REG.points[n]=[]; }
+  showIntro();
+}
+function showIntro(){
+  stopRaceLoop();
+  resultOv.classList.add('hidden');
+  introOv.classList.remove('hidden');
+  deck.style.visibility='hidden';
+  const lvl=LEVELS[REG.raceNo-1];
+  introOv.innerHTML=`
+    <div class="panel">
+      <div class="eyebrow">SEJLADS ${REG.raceNo} AF ${REG.total}</div>
+      <h2>Niveau ${REG.raceNo}: ${lvl.name}</h2>
+      <p>${lvl.desc}</p>
+      <p style="opacity:.8;font-size:13px">Banen: start ved bagbord side af dommerbåden ▸ kryds til topmærket ▸ læns til slagmærket (bum!) ▸ læns til bundmærket ▸ kryds i mål.</p>
+      <button class="actionbtn" id="goBtn">Gør klar til start ⛵️</button>
+    </div>`;
+  el('goBtn').addEventListener('click', ()=>startRace(REG.raceNo-1));
+  // tegn en stille forhåndsvisning af banen bagved
+  resize(); drawPreview();
+}
+
+/* ============================================================
+   SPIL-OBJEKTER
+   ============================================================ */
+const cv=el('cv'), ctx=cv.getContext('2d');
+let DPR=1,CW=0,CH=0,Z=1;
+let G=null, raf=null, lastT=0;
+const keys={left:false,right:false,sin:false,sout:false};
+const cam={x:50,y:78};
+
+const hudTimer=el('hudTimer'),hudPos=el('hudPos'),hudSpeed=el('hudSpeed');
+const hudInstr=el('hudInstr'),hudBanner=el('hudBanner'),hudTip=el('hudTip');
+const introOv=el('introOv'),resultOv=el('resultOv'),deck=el('deck'),btnBum=el('btnBum');
+
+function resize(){
+  const r=cv.getBoundingClientRect();
+  DPR=Math.min(window.devicePixelRatio||1,2);
+  CW=Math.max(1,Math.round(r.width*DPR));
+  CH=Math.max(1,Math.round(r.height*DPR));
+  cv.width=CW; cv.height=CH;
+  Z=CW/VIEW;
+}
+window.addEventListener('resize',()=>{ if(G||REG) resize(); });
+
+function sx(x){return (x-cam.x)*Z+CW/2;}
+function sy(y){return (y-cam.y)*Z+CH/2;}
+
+function newBoat(x,y,o){
+  const b=Object.assign({x,y,heading:0,speed:0,rudder:0,sheet:30,sailSide:1,
+    started:false,leg:0,finished:false,finishTime:0,_prevY:y,gybeT:0,_wrong:false,
+    isAI:false,skill:1,tack:1,name:'',color:'#fff',sail:'#fff',lane:50},o||{});
+  b.sailSide = angleDiff(b.heading,0)>=0 ? -1 : 1;   // sejlet i læ fra start (vind fra 0)
+  b._prevTwaS = angleDiff(b.heading,0);
+  return b;
+}
+
+function startRace(levelIdx){
+  const lvl=LEVELS[levelIdx];
+  resize();
+  introOv.classList.add('hidden');
+  resultOv.classList.add('hidden');
+  deck.style.visibility='visible';
+  G={
+    lvl, levelIdx, phase:'prestart', elapsed:0, raceT0:0,
+    startTimer:lvl.startTime, raceStarted:false, mustDip:false,
+    windDir:0, windTarget:0, shiftTimer:lvl.shiftEvery*0.5, gustPhase:Math.random()*6,
+    boat:newBoat(50,92,{heading:8,sheet:14,color:'#FFC93C',sail:'#fff5d6',name:'Dig'}),
+    ais:[],
+    banner:{t:'',c:'',until:0}, tip:{t:'',until:0}, noGo:0,
+    streaks:makeStreaks(),
+  };
+  const lanes=[46,53,56];
+  for(let i=0;i<3;i++){
+    G.ais.push(newBoat(lanes[i],92+(i%2),{isAI:true,skill:lvl.aiSkill[i],heading:6,
+      color:RIVAL_COLORS[i],sail:RIVAL_SAILS[i],name:RIVALS[i],lane:lanes[i],sheet:14}));
+  }
+  cam.x=G.boat.x; cam.y=G.boat.y;
+  setBanner('Gør klar til start!','',2);
+  setTip('Bliv UNDER startlinjen, til nedtællingen er slut.',4.5);
+  lastT=(typeof performance!=='undefined'?performance.now():0);
+  startRaceLoop();
+}
+function startRaceLoop(){ if(raf)cancelAnimationFrame(raf); raf=requestAnimationFrame(loop); }
+function stopRaceLoop(){ if(raf){cancelAnimationFrame(raf); raf=null;} }
+function stopRace(){ stopRaceLoop(); keys.left=keys.right=keys.sin=keys.sout=false; }
+
+/* ---------- TRÆNING ---------- */
+function startTraining(){
+  stopRaceLoop(); resultOv.classList.add('hidden');
+  introOv.classList.remove('hidden'); deck.style.visibility='hidden';
+  G=null; resize();
+  introOv.innerHTML=`
+    <div class="panel">
+      <div class="eyebrow">TRÆNING</div>
+      <h2>Øv dig uden pres</h2>
+      <p>Ingen tid og ingen modstandere. Hold øje med de to <b>tegn</b> på sejlet: når både det røde (luv) og det grønne (læ) strømmer lige bagud, har du perfekt trim og mest fart.</p>
+      <div class="drillgrid">
+        <button class="drillbtn" data-d="free">⛵️ Fri sejlads</button>
+        <button class="drillbtn" data-d="trim">🎏 Trim &amp; tegn</button>
+        <button class="drillbtn" data-d="tack">↩︎ Stagvending</button>
+        <button class="drillbtn" data-d="gybe">🔄 Bumning</button>
+      </div>
+    </div>`;
+  introOv.querySelectorAll('.drillbtn').forEach(b=>b.addEventListener('click',()=>beginTrain(b.dataset.d)));
+  drawPreview();
+}
+function beginTrain(drill){
+  resize();
+  introOv.classList.add('hidden'); resultOv.classList.add('hidden'); deck.style.visibility='visible';
+  const lvl=LEVELS[1];
+  const starts={free:{x:50,y:92,h:10}, trim:{x:80,y:54,h:120}, tack:{x:50,y:74,h:20}, gybe:{x:64,y:34,h:135}};
+  const s=starts[drill]||starts.free;
+  G={ lvl, levelIdx:1, mode:'train', drill, phase:'race', elapsed:0, raceT0:0,
+      startTimer:0, raceStarted:true, mustDip:false,
+      windDir:0, windTarget:0, shiftTimer:lvl.shiftEvery, gustPhase:0, gust:1,
+      boat:newBoat(s.x,s.y,{heading:s.h,sheet:idealSheet(Math.abs(angleDiff(s.h,0))),color:'#FFC93C',sail:'#fff5d6',name:'Dig',started:true,leg:0}),
+      ais:[], banner:{t:'',c:'',until:0}, tip:{t:'',until:0}, noGo:0, streaks:makeStreaks(),
+      drillData:{tacks:0,gybes:0,trimT:0,stars:0} };
+  cam.x=G.boat.x; cam.y=G.boat.y;
+  const intro={free:'Fri sejlads – sejl banen rundt i dit eget tempo.',
+    trim:'Hold begge tegn strømmende og saml stjerner!',
+    tack:'Kryds op mod topmærket med rene stagvendinger.',
+    gybe:'Sejl læns og tryk BUM rundt om slagmærket.'};
+  setBanner(intro[drill]||'Træning','',3.2);
+  lastT=(typeof performance!=='undefined'?performance.now():0);
+  startRaceLoop();
+}
+function trainUpdate(dt){
+  const b=G.boat, d=G.drillData;
+  if(b._didTack){ b._didTack=false; d.tacks++; if(G.drill==='tack') setBanner('Vending! ↩︎','good',0.9); }
+  if(b._tt && b._tt.good){ d.trimT+=dt; if(d.trimT>=2){ d.trimT=0; d.stars++; setBanner('⭐ Stjerne! Perfekt trim','good',1.1); } }
+  else d.trimT=Math.max(0,d.trimT-dt*0.6);
+}
+
+function makeStreaks(){const a=[];for(let i=0;i<80;i++)a.push({x:6+Math.random()*90,y:4+Math.random()*118,len:2+Math.random()*3,sp:5+Math.random()*5});return a;}
+function setBanner(t,c,s){G.banner={t,c:c||'',until:G.elapsed+(s||2)};}
+function setTip(t,s){G.tip={t,until:G.elapsed+(s||3)};}
+
+/* ---------- input ---------- */
+window.addEventListener('keydown',e=>{
+  if(e.key==='ArrowLeft'){keys.left=true;e.preventDefault();}
+  else if(e.key==='ArrowRight'){keys.right=true;e.preventDefault();}
+  else if(e.key==='ArrowUp'){keys.sin=true;e.preventDefault();}
+  else if(e.key==='ArrowDown'){keys.sout=true;e.preventDefault();}
+  else if(e.key===' '){doGybe();e.preventDefault();}
+});
+window.addEventListener('keyup',e=>{
+  if(e.key==='ArrowLeft')keys.left=false;
+  else if(e.key==='ArrowRight')keys.right=false;
+  else if(e.key==='ArrowUp')keys.sin=false;
+  else if(e.key==='ArrowDown')keys.sout=false;
+});
+function hold(id,key){
+  const b=el(id);
+  const on=e=>{e.preventDefault();keys[key]=true;}, off=e=>{e.preventDefault();keys[key]=false;};
+  b.addEventListener('mousedown',on);b.addEventListener('mouseup',off);b.addEventListener('mouseleave',off);
+  b.addEventListener('touchstart',on,{passive:false});b.addEventListener('touchend',off,{passive:false});b.addEventListener('touchcancel',off,{passive:false});
+}
+hold('btnLeft','left');hold('btnRight','right');hold('btnIn','sin');hold('btnOut','sout');
+function bumPress(e){e.preventDefault();doGybe();}
+btnBum.addEventListener('click',bumPress);
+btnBum.addEventListener('touchstart',bumPress,{passive:false});
+
+function doGybe(){
+  if(!G||G.phase==='done'||G.boat.finished) return;
+  const atwa=Math.abs(angleDiff(G.boat.heading,G.windDir));
+  if(atwa>80){
+    G.boat.sailSide=-G.boat.sailSide; G.boat.gybeT=0.45;
+    setTip('Bumning! Sejlet skifter side.',1.4);
+    if(G.mode==='train' && G.drill==='gybe'){ G.drillData.gybes++; setBanner('Flot bumning! 🔄','good',1); }
+  } else { setTip('Du bummer kun, når du sejler læns (vinden i ryggen).',1.6); }
+}
+
+/* ============================================================
+   LOOP / OPDATERING
+   ============================================================ */
+function loop(now){
+  const dt=Math.min(0.05,(now-lastT)/1000); lastT=now;
+  if(CW<2) resize();
+  if(G){ if(G.phase!=='done') update(dt); draw(); updateHUD(); }
+  raf=requestAnimationFrame(loop);
+}
+
+function update(dt){
+  const lvl=G.lvl;
+  G.elapsed+=dt;
+  // vind
+  G.shiftTimer-=dt;
+  if(G.shiftTimer<=0){
+    G.shiftTimer=lvl.shiftEvery*(0.7+Math.random()*0.6);
+    G.windTarget=clamp((Math.random()*2-1)*lvl.shiftAmp,-lvl.shiftAmp,lvl.shiftAmp);
+    if(G.raceStarted){ setBanner('Vindspring! 🌬️','',1.5); setTip('Vinden drejer – kan du nu pege tættere mod mærket? Ellers vend!',3.4); }
+  }
+  G.windDir=lerpAngle(G.windDir,G.windTarget,1-Math.pow(0.5,dt*1.1));
+  G.gust=1+lvl.gust*Math.sin((G.elapsed+G.gustPhase)*1.25);
+
+  // nedtælling
+  if(G.phase==='prestart'){
+    G.startTimer-=dt;
+    if(G.startTimer<=0){G.startTimer=0;gun();}
+  }
+
+  controlPlayer(dt);
+  physics(G.boat,dt);
+  // OCS-advarsel under prestart
+  if(G.phase==='prestart'){
+    if(G.boat.y<DBOAT.y && G.boat.x>PIN_START.x-1 && G.boat.x<DBOAT.x){
+      if(!G.boat._ow){setTip('For tidligt! Sejl tilbage under linjen.',2);G.boat._ow=true;}
+    } else G.boat._ow=false;
+  }
+  if(G.mustDip && G.boat.y>DBOAT.y){G.mustDip=false;setBanner('Linjen klaret – kryds op!','good',1.4);}
+  checkLeg(G.boat);
+
+  for(const a of G.ais){ controlAI(a,dt); physics(a,dt); checkLeg(a); }
+
+  // sammenstød: både kan ikke sejle igennem hinanden
+  const boats=[G.boat,...G.ais];
+  for(let i=0;i<boats.length;i++)for(let j=i+1;j<boats.length;j++){
+    const a=boats[i], c=boats[j];
+    if(a.finished||c.finished) continue;
+    let dx=c.x-a.x, dy=c.y-a.y, d=Math.hypot(dx,dy); const minD=2.4;
+    if(d<minD && d>0.001){
+      const nx=dx/d, ny=dy/d, push=(minD-d)/2;
+      a.x-=nx*push; a.y-=ny*push; c.x+=nx*push; c.y+=ny*push;
+      a.x=clamp(a.x,6,96); a.y=clamp(a.y,4,124); c.x=clamp(c.x,6,96); c.y=clamp(c.y,4,124);
+      a.speed*=0.6; c.speed*=0.6;
+      if(a===G.boat||c===G.boat){ if(!G._bumpT||G.elapsed-G._bumpT>1.3){ setBanner('Sammenstød! 💥','warn',1.1); setTip('Hold afstand til de andre både!',1.6); G._bumpT=G.elapsed; } }
+    }
+  }
+
+  if(G.mode==='train'){ trainUpdate(dt); }
+  else {
+    if(G.boat.finished){
+      if(G.finishDelay===undefined) G.finishDelay=1.1;
+      G.finishDelay-=dt;
+      if(G.finishDelay<=0 && G.phase!=='done') finishRace();
+    }
+    if((G.elapsed-G.raceT0)>360 && G.phase!=='done') finishRace();
+  }
+
+  // streger
+  const blow=norm360(G.windDir+180),wvx=Math.sin(blow*RAD),wvy=-Math.cos(blow*RAD);
+  for(const s of G.streaks){s.x+=wvx*s.sp*dt;s.y+=wvy*s.sp*dt;
+    if(s.x<4)s.x=96;if(s.x>96)s.x=4;if(s.y<2)s.y=122;if(s.y>122)s.y=2;}
+
+  // kamera
+  cam.x+=(G.boat.x-cam.x)*(1-Math.pow(0.5,dt*3));
+  cam.y+=(G.boat.y-cam.y)*(1-Math.pow(0.5,dt*3));
+}
+
+function gun(){
+  G.raceStarted=true; G.phase='race'; G.raceT0=G.elapsed;
+  if(G.boat.y<DBOAT.y && G.boat.x>PIN_START.x-1 && G.boat.x<DBOAT.x){
+    G.mustDip=true; setBanner('Tyvstart! 🚩','warn',2.4);
+    setTip('Du var over linjen. Sejl under linjen igen, før du fortsætter.',4);
+  } else {
+    const d=G.boat.y-DBOAT.y;
+    if(d<7 && polar(angleDiff(G.boat.heading,G.windDir))>0.45) setBanner('Kanonstart! 💥','good',2);
+    else if(d<16) setBanner('Start! ⛵️','',1.8);
+    else { setBanner('Start! Lidt sent ude','',2); setTip('Næste gang: vær tæt på linjen med fart, når det smælder.',4); }
+  }
+}
+
+function controlPlayer(dt){
+  const b=G.boat;
+  let r=0; if(keys.left)r-=1; if(keys.right)r+=1;
+  if(r!==0) b.rudder=clamp(b.rudder+r*2.8*dt,-1,1);
+  else b.rudder*=Math.pow(0.015,dt);
+  let s=0; if(keys.sin)s-=1; if(keys.sout)s+=1;
+  if(s!==0) b.sheet=clamp(b.sheet+s*60*dt,0,90);
+}
+
+function physics(b,dt){
+  if(b.finished) return;
+  const twaS=angleDiff(b.heading,G.windDir), atwa=Math.abs(twaS);
+  const ideal=idealSheet(atwa);
+  let trimPow;
+  if(b.isAI){ b.sheet=ideal; trimPow=1; }
+  else { const err=Math.abs(b.sheet-ideal), tol=G.lvl.sheetTol;
+         trimPow=err<=tol?1:clamp(1-(err-tol)/42,0.4,1); }
+  // sejlet skal stå i læ. op mod vinden skifter det automatisk (vending);
+  // på læns skal man bumme manuelt, ellers står sejlet bak.
+  // Sejlet skal stå i læ. Op mod vinden skifter det side AF SIG SELV, men kun når
+  // man vender GENNEM vinden (stagvending). På læns krydser man ikke gennem vinden,
+  // så sejlet bliver stående bak, til man bummer (trykker BUM).
+  const desiredSide=twaS>=0?-1:1;
+  let sidePow=1; b._wrong=false;
+  if(b.isAI){
+    if(b.sailSide!==desiredSide){ b.sailSide=desiredSide; b.speed*=0.9; }
+  } else {
+    const prev=b._prevTwaS;
+    const tackedThroughWind = prev!==undefined && prev!==0 &&
+        (Math.sign(prev)!==Math.sign(twaS)) && Math.abs(prev)<90 && Math.abs(twaS)<90;
+    if(tackedThroughWind){ b.sailSide=desiredSide; b.speed*=0.84; b._didTack=true; }
+    if(b.sailSide!==desiredSide){ sidePow=0.42; b._wrong=true; }
+  }
+  b._prevTwaS=twaS;
+  if(b.gybeT>0){ b.gybeT-=dt; sidePow*=0.85; }
+  computeTT(b,atwa,ideal);
+  const rudderPow=1-0.32*Math.abs(b.rudder);
+  const skill=b.isAI?b.skill:1;
+  const target=MAX_SPEED*polar(atwa)*trimPow*sidePow*rudderPow*G.gust*skill;
+  b.speed+=(target-b.speed)*(1-Math.pow(0.5,dt*2.2));
+  const flow=clamp(b.speed/(MAX_SPEED*0.30),0.12,1.25);
+  b.heading=norm360(b.heading+b.rudder*BASE_TURN*flow*dt);
+  b.x+=Math.sin(b.heading*RAD)*b.speed*dt;
+  b.y+=-Math.cos(b.heading*RAD)*b.speed*dt;
+  b.x=clamp(b.x,6,96); b.y=clamp(b.y,4,124);
+  if(!b.isAI){
+    if(atwa<26){G.noGo+=dt; if(G.noGo>1 && G.mode!=='train'){setTip('Sejlet flagrer – drej VÆK fra vinden!',1.4);G.noGo=0.3;}}
+    else G.noGo=0;
+  }
+}
+function computeTT(b,atwa,ideal){
+  let wf=false,lf=false;
+  if(!b.isAI){
+    if(b._wrong){ wf=true; lf=true; }
+    else if(atwa<150){
+      const err=b.sheet-ideal, tol=G.lvl.sheetTol;
+      if(atwa<34) wf=true;            // luffer for højt -> luv-tegn løfter
+      if(err>tol*0.7) wf=true;        // for løst trim -> sejlet luffer
+      if(err<-tol*0.7) lf=true;       // for hårdt trim -> stall, læ-tegn blafrer
+    }
+  }
+  b._tt={wf,lf,good:(!wf&&!lf&&atwa>=34&&atwa<150)};
+}
+function pointOfSail(atwa){ if(atwa<34)return 'No-go'; if(atwa<60)return 'Kryds'; if(atwa<115)return 'Halvvind'; if(atwa<150)return 'Rumskøde'; return 'Læns'; }
+function coachLine(b){
+  const atwa=Math.abs(angleDiff(b.heading,G.windDir));
+  if(b._wrong) return {t:'Sejlet står bak! Tryk BUM for at få det over i læ.',c:'warn'};
+  if(atwa<34) return {t:'Du luffer for højt – det røde tegn blafrer. Drej lidt VÆK fra vinden.',c:''};
+  const err=b.sheet-idealSheet(atwa), tol=G.lvl.sheetTol;
+  if(err>tol*0.7) return {t:'Sejlet er for løst – hal skøden IND (↑).',c:''};
+  if(err<-tol*0.7) return {t:'Sejlet er for hårdt – slæk skøden UD (↓).',c:''};
+  if(atwa>=150) return {t:'Læns! Hold sejlet helt ude – og bum ved mærket.',c:'good'};
+  return {t:'Perfekt! Begge tegn strømmer – fuld fart. ⭐',c:'good'};
+}
+
+function checkLeg(b){
+  if(b.finished) return;
+  if(!b.started){
+    if(G.raceStarted){
+      const crossed = b._prevY>=DBOAT.y && b.y<DBOAT.y && b.x>PIN_START.x-1 && b.x<DBOAT.x+1;
+      if(b.isAI){
+        const inX = b.x>PIN_START.x-4 && b.x<DBOAT.x+4;
+        if((crossed || b.y<DBOAT.y-2) && inX){ b.started=true; b.leg=0; b.startTime=G.elapsed; }
+      } else if(crossed){
+        b.started=true; b.leg=0; b.startTime=G.elapsed; legPrompt(0);
+      }
+    }
+    b._prevY=b.y; return;
+  }
+  if(b.leg<3){
+    const m=LEGTGT[b.leg];
+    if(Math.hypot(b.x-m.x,b.y-m.y)<m.r+2.8){
+      b.leg++;
+      if(!b.isAI){
+        if(b.leg<4) legPrompt(b.leg);
+        if(b.leg===2) setTip('Forbi slagmærket – husk at bumme, så sejlet er på den rigtige side!',3.2);
+      }
+    }
+  } else {
+    if(b._prevY>=DBOAT.y && b.y<DBOAT.y && b.x>DBOAT.x-2 && b.x<PIN_FIN.x+3){
+      if(G.mode==='train'){ setBanner('Banen gennemført! 🎉 Tag en omgang til.','good',2.6); b.leg=0; b._prevY=b.y; return; }
+      b.finished=true; b.finishTime=G.elapsed-G.raceT0;
+      if(!b.isAI) setBanner('I MÅL! 🏁','good',2.5);
+    }
+  }
+  b._prevY=b.y;
+}
+function legPrompt(leg){ if(leg<4) setBanner(LEG_INSTR[leg],'',1.8); }
+
+/* ---------- AI ---------- */
+function aiMarkTarget(b){
+  const M=LEGTGT[b.leg];
+  if(b.leg>=3) return M;                       // mål: bare krydse linjen
+  const prevPt=b.leg===0?START_MID:LEGTGT[b.leg-1];
+  const N=LEGTGT[b.leg+1];
+  const inx=M.x-prevPt.x, iny=M.y-prevPt.y, il=Math.hypot(inx,iny)||1;
+  const exx=N.x-M.x, exy=N.y-M.y, el=Math.hypot(exx,exy)||1;
+  const exu={x:exx/el,y:exy/el};
+  const cross=(inx/il)*exu.y-(iny/il)*exu.x;
+  const sgn=cross>=0?1:-1;
+  const perp={x:-exu.y*sgn, y:exu.x*sgn};       // udvendig side af svinget
+  // sigt mod et punkt lige uden for bøjen på rundingssiden -> båden buer udenom
+  return {x:M.x+perp.x*(M.r+1.2), y:M.y+perp.y*(M.r+1.2)};
+}
+function aiDesired(b){
+  if(!b.started){
+    // styr op gennem startporten nær midten
+    const tx=START_MID.x;
+    return b.x>tx ? norm360(G.windDir-46) : norm360(G.windDir+46);
+  }
+  const t=aiMarkTarget(b);
+  const bearing=norm360(Math.atan2(t.x-b.x,-(t.y-b.y))/RAD);
+  const twaTgt=Math.abs(angleDiff(bearing,G.windDir));
+  if(twaTgt>=44) return bearing;        // kan sejle direkte
+  const chR=norm360(G.windDir+46), chL=norm360(G.windDir-46);
+  if(b.x<t.x-3) b.tack=1; else if(b.x>t.x+3) b.tack=-1;
+  return b.tack>0?chR:chL;
+}
+function controlAI(b,dt){
+  if(b.finished) return;
+  if(G.phase==='prestart'){
+    // hold under linjen til start
+    let des=180;
+    if(b.y<DBOAT.y+5) des=180;
+    else { des=b.lane<50?20:340; }
+    if(b.y<DBOAT.y+3) des=180;
+    const dh=angleDiff(des,b.heading); b.rudder=clamp(dh/40,-1,1);
+    return;
+  }
+  const des=aiDesired(b);
+  const dh=angleDiff(des,b.heading);
+  b.rudder=clamp(dh/38,-1,1);
+}
+
+/* ============================================================
+   RESULTAT / STÆVNE
+   ============================================================ */
+function rankKey(b){ return b.finished ? b.finishTime : (1e6 - boatProgress(b)); }
+function placePoints(){
+  const all=[G.boat,...G.ais].slice().sort((a,b)=>rankKey(a)-rankKey(b));
+  all.forEach((b,i)=>{ REG.points[b.name].push(i+1); });
+  return all;
+}
+function finishRace(){
+  G.phase='done'; deck.style.visibility='hidden';
+  const all=placePoints();
+  const place=all.indexOf(G.boat)+1;
+  const medal=place===1?'🥇':place===2?'🥈':place===3?'🥉':'🎖️';
+  const last=REG.raceNo>=REG.total;
+  const standings=computeStandings(!last? false : true);
+  let rows='';
+  standings.forEach((s,i)=>{
+    const me=s.name==='Dig'?' class="me"':'';
+    rows+=`<tr${me}><td>${i+1}. ${s.name}</td><td>${s.scores}</td><td>${s.total}</td></tr>`;
+  });
+  resultOv.classList.remove('hidden');
+  resultOv.innerHTML=`
+    <div class="panel">
+      <div class="eyebrow">SEJLADS ${REG.raceNo} AF ${REG.total} · ${G.lvl.name}</div>
+      <h2>${place===1?'Du vandt sejladsen! 🎉':'Sejlads slut'}</h2>
+      <div class="place">${medal} ${place}.</div>
+      <table class="standings"><tr><th>Stilling i stævnet</th><th>Sejladser</th><th>I alt*</th></tr>${rows}</table>
+      <p style="font-size:12px;opacity:.7">*Det dårligste resultat trækkes fra (overstreget), når der er sejlet mindst 4 sejladser.</p>
+      ${last?`<button class="actionbtn" id="seriesBtn">Se det samlede resultat 🏆</button>`
+            :`<button class="actionbtn" id="nextBtn">Næste sejlads ›</button>
+              <div><button class="ghostbtn" id="quitBtn">Stop stævnet</button></div>`}
+    </div>`;
+  if(last){ el('seriesBtn').addEventListener('click',showSeriesResult); }
+  else {
+    el('nextBtn').addEventListener('click',()=>{REG.raceNo++;showIntro();});
+    el('quitBtn').addEventListener('click',()=>show('menu'));
+  }
+}
+
+function computeStandings(applyDiscardAlways){
+  const names=['Dig',...RIVALS];
+  const rows=names.map(n=>{
+    const sc=REG.points[n].slice();
+    const racesDone=sc.length;
+    let discardIdx=-1;
+    if(racesDone>=4){ // fratræk dårligste (højeste) ene resultat
+      let mx=-1; sc.forEach((v,i)=>{if(v>mx){mx=v;discardIdx=i;}});
+    }
+    let total=0; const parts=[];
+    sc.forEach((v,i)=>{
+      if(i===discardIdx){ parts.push(`<span class="disc">${v}</span>`); }
+      else { parts.push(`${v}`); total+=v; }
+    });
+    return {name:n, total, scores:parts.join(' ')};
+  });
+  rows.sort((a,b)=>a.total-b.total || a.name.localeCompare(b.name));
+  return rows;
+}
+
+function showSeriesResult(){
+  const standings=computeStandings(true);
+  const champ=standings[0];
+  const myPlace=standings.findIndex(s=>s.name==='Dig')+1;
+  const won=champ.name==='Dig';
+  let rows='';
+  standings.forEach((s,i)=>{
+    const me=s.name==='Dig'?' class="me"':'';
+    const m=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+    rows+=`<tr${me}><td>${m} ${i+1}. ${s.name}</td><td>${s.scores}</td><td>${s.total}</td></tr>`;
+  });
+  resultOv.classList.remove('hidden');
+  resultOv.innerHTML=`
+    <div class="panel">
+      <div class="eyebrow">STÆVNET ER SLUT</div>
+      <h2>${won?'Du blev stævnemester! 🏆':'Godt stævne sejlet!'}</h2>
+      <div class="place">${won?'🏆':myPlace+'.'}</div>
+      <p>${won?'Du vandt det samlede stævne. Helt vildt sejlet!':'Du blev nr. '+myPlace+' samlet. Prøv igen og slå din egen rekord!'}</p>
+      <table class="standings"><tr><th>Samlet stilling</th><th>Sejladser</th><th>I alt</th></tr>${rows}</table>
+      <button class="actionbtn" id="newSeries">Sejl et nyt stævne</button>
+      <div><button class="ghostbtn" id="toMenu">Til menu</button></div>
+    </div>`;
+  el('newSeries').addEventListener('click',startSeries);
+  el('toMenu').addEventListener('click',()=>show('menu'));
+}
+function formatTime(s){const m=Math.floor(s/60),sec=Math.floor(s%60);return m+':'+(sec<10?'0':'')+sec;}
+
+/* ============================================================
+   TEGNING
+   ============================================================ */
+function drawPreview(){
+  // vis hele banen centreret (til intro-skærmen bagved overlay)
+  const old={cx:cam.x,cy:cam.y,z:Z};
+  cam.x=50; cam.y=65; Z=CW/132;
+  drawWater(); drawCourse(true); drawCommittee();
+  Z=old.z; cam.x=old.cx; cam.y=old.cy;
+}
+function draw(){
+  drawWater();
+  drawStreaks();
+  drawCourse(false);
+  drawCommittee();
+  drawGuide(G.boat);
+  for(const a of G.ais) drawBoat(a);
+  drawBoat(G.boat,true);
+  drawWindArrow();
+  drawTrimGauge();
+  drawSailIndicator();
+  drawRudder();
+  drawMinimap();
+}
+function drawSailIndicator(){
+  const b=G.boat;
+  const R=38*DPR, cx=R+16*DPR, cy=CH*0.42;     // venstre side, midtfor
+  ctx.save();
+  ctx.fillStyle='rgba(6,36,62,.62)';
+  ctx.beginPath();ctx.arc(cx,cy,R+7*DPR,0,Math.PI*2);ctx.fill();
+  ctx.lineWidth=3*DPR;
+  ctx.strokeStyle=b._wrong?'rgba(255,92,92,.95)':'rgba(91,209,122,.92)';
+  ctx.beginPath();ctx.arc(cx,cy,R+7*DPR,0,Math.PI*2);ctx.stroke();
+  // relativ vind (kommer FRA windDir; relativt til båden)
+  const relWind=(G.windDir-b.heading)*RAD;
+  ctx.save();ctx.translate(cx,cy);ctx.rotate(relWind);
+  ctx.fillStyle='rgba(190,230,255,.95)';
+  ctx.beginPath();ctx.moveTo(0,-R-1*DPR);ctx.lineTo(-5*DPR,-R+11*DPR);ctx.lineTo(5*DPR,-R+11*DPR);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='rgba(190,230,255,.6)';ctx.lineWidth=2.4*DPR;
+  ctx.beginPath();ctx.moveTo(0,-R+4*DPR);ctx.lineTo(0,-R*0.4);ctx.stroke();
+  ctx.restore();
+  // båden peger op
+  const u=R*0.52, side=b.sailSide, sa=b.sheet*RAD;
+  ctx.save();ctx.translate(cx,cy);
+  ctx.fillStyle=b.color;ctx.strokeStyle='rgba(0,0,0,.32)';ctx.lineWidth=0.11*u;
+  ctx.beginPath();ctx.moveTo(0,-1.15*u);ctx.quadraticCurveTo(0.5*u,0,0.38*u,1.0*u);ctx.lineTo(-0.38*u,1.0*u);ctx.quadraticCurveTo(-0.5*u,0,0,-1.15*u);ctx.closePath();ctx.fill();ctx.stroke();
+  const ex=side*Math.sin(sa)*1.6*u, ey=-0.35*u+Math.cos(sa)*1.6*u;
+  // sejl (fyldt) + bom
+  ctx.fillStyle=b._wrong?'rgba(255,160,160,.6)':'rgba(255,255,255,.6)';
+  ctx.strokeStyle='#fff';ctx.lineWidth=0.16*u;
+  ctx.beginPath();ctx.moveTo(0,-0.35*u);ctx.quadraticCurveTo(side*0.85*u,(ey-0.35*u)/2,ex,ey);ctx.lineTo(0,-0.2*u);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.strokeStyle='rgba(0,0,0,.4)';ctx.lineWidth=0.1*u;
+  ctx.beginPath();ctx.moveTo(0,-0.35*u);ctx.lineTo(ex,ey);ctx.stroke();
+  ctx.restore();
+  // tekster
+  ctx.textAlign='center';
+  ctx.fillStyle='rgba(255,255,255,.8)';ctx.font=`${8.5*DPR}px Nunito`;
+  ctx.fillText('SEJLET',cx,cy-R-13*DPR);
+  ctx.font=`${10*DPR}px Fredoka, sans-serif`;
+  ctx.fillStyle=b._wrong?'#ffb3b3':'#b7efc6';
+  ctx.fillText(b._wrong?'står bak – BUM!':'står i læ ✓',cx,cy+R+18*DPR);
+  ctx.restore();
+}
+function drawWater(){
+  const g=ctx.createLinearGradient(0,0,0,CH);
+  g.addColorStop(0,'#1a6f93');g.addColorStop(1,'#0c4a68');
+  ctx.fillStyle=g;ctx.fillRect(0,0,CW,CH);
+}
+function drawStreaks(){
+  const blow=norm360(G.windDir+180);
+  ctx.save();ctx.strokeStyle='rgba(255,255,255,0.14)';ctx.lineWidth=Math.max(1,1.3*DPR);ctx.lineCap='round';
+  for(const s of G.streaks){
+    const ex=s.x+Math.sin(blow*RAD)*s.len, ey=s.y-Math.cos(blow*RAD)*s.len;
+    ctx.beginPath();ctx.moveTo(sx(s.x),sy(s.y));ctx.lineTo(sx(ex),sy(ey));ctx.stroke();
+  }
+  ctx.restore();
+}
+function buoy(x,y,col,big){
+  ctx.save();
+  ctx.beginPath();ctx.arc(sx(x),sy(y),(big?0.9:0.65)*Z,0,Math.PI*2);
+  ctx.fillStyle=col;ctx.shadowColor='rgba(0,0,0,.35)';ctx.shadowBlur=6*DPR;ctx.fill();
+  ctx.restore();
+  if(big){
+    ctx.fillStyle='rgba(0,0,0,.18)';ctx.beginPath();ctx.arc(sx(x),sy(y),0.4*Z,0,Math.PI*2);ctx.fill();
+  }
+}
+function label(text,x,y,dy){
+  ctx.fillStyle='rgba(255,255,255,.9)';ctx.font=`${11*DPR}px Nunito, sans-serif`;ctx.textAlign='center';
+  ctx.fillText(text,sx(x),sy(y)+(dy||0)*DPR);
+}
+function drawCourse(preview){
+  // startlinje (bagbord) og mållinje (styrbord)
+  ctx.lineWidth=2*DPR;ctx.setLineDash([6*DPR,6*DPR]);
+  ctx.strokeStyle='rgba(91,209,122,.7)';
+  ctx.beginPath();ctx.moveTo(sx(DBOAT.x),sy(DBOAT.y));ctx.lineTo(sx(PIN_START.x),sy(PIN_START.y));ctx.stroke();
+  ctx.strokeStyle='rgba(255,201,60,.8)';
+  ctx.beginPath();ctx.moveTo(sx(DBOAT.x),sy(DBOAT.y));ctx.lineTo(sx(PIN_FIN.x),sy(PIN_FIN.y));ctx.stroke();
+  ctx.setLineDash([]);
+  buoy(PIN_START.x,PIN_START.y,'#5BD17A');
+  buoy(PIN_FIN.x,PIN_FIN.y,'#ffb703');
+  buoy(MARKS.top.x,MARKS.top.y,'#ff8c42',true);
+  buoy(MARKS.slag.x,MARKS.slag.y,'#ff8c42',true);
+  buoy(MARKS.bund.x,MARKS.bund.y,'#ff8c42',true);
+  label('Topmærke',MARKS.top.x,MARKS.top.y,-12);
+  label('Slagmærke',MARKS.slag.x,MARKS.slag.y,-12);
+  label('Bundmærke',MARKS.bund.x,MARKS.bund.y,18);
+  label('Start',(DBOAT.x+PIN_START.x)/2,PIN_START.y,18);
+  label('Mål',(DBOAT.x+PIN_FIN.x)/2,PIN_FIN.y,-12);
+}
+function drawCommittee(){
+  ctx.save();
+  ctx.translate(sx(DBOAT.x),sy(DBOAT.y));
+  ctx.fillStyle='#e9eef2';ctx.strokeStyle='rgba(0,0,0,.3)';ctx.lineWidth=1.2*DPR;
+  const w=2.0*Z,h=1.1*Z;
+  ctx.beginPath();
+  ctx.moveTo(-w/2,-h/2);ctx.lineTo(w/2,-h/2);ctx.lineTo(w/2+0.4*Z,0);ctx.lineTo(w/2,h/2);ctx.lineTo(-w/2,h/2);ctx.closePath();
+  ctx.fill();ctx.stroke();
+  // flag
+  ctx.fillStyle='#FF5C5C';ctx.fillRect(-w/2,-h/2-1.0*Z,0.9*Z,0.6*Z);
+  ctx.strokeStyle='#9aa';ctx.beginPath();ctx.moveTo(-w/2,-h/2-1.0*Z);ctx.lineTo(-w/2,-h/2);ctx.stroke();
+  ctx.restore();
+}
+function drawGuide(b){
+  if(!b.started && G.phase!=='prestart') return;
+  let t;
+  if(!b.started) t=START_MID; else t=LEGTGT[b.leg];
+  const ang=Math.atan2(t.x-b.x,-(t.y-b.y));
+  ctx.save();ctx.translate(sx(b.x),sy(b.y));ctx.rotate(ang);
+  ctx.strokeStyle='rgba(255,201,60,.6)';ctx.lineWidth=2*DPR;ctx.setLineDash([4*DPR,5*DPR]);
+  ctx.beginPath();ctx.moveTo(0,-1.0*Z);ctx.lineTo(0,-2.0*Z);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='rgba(255,201,60,.8)';
+  ctx.beginPath();ctx.moveTo(0,-2.4*Z);ctx.lineTo(-0.4*Z,-1.8*Z);ctx.lineTo(0.4*Z,-1.8*Z);ctx.closePath();ctx.fill();
+  ctx.restore();
+}
+function drawWindArrow(){
+  const blow=norm360(G.windDir+180);
+  const px=40*DPR,py=84*DPR;
+  ctx.save();ctx.translate(px,py);ctx.rotate(blow*RAD);
+  ctx.fillStyle='rgba(255,255,255,.92)';ctx.strokeStyle='rgba(255,255,255,.92)';ctx.lineWidth=2.4*DPR;ctx.lineCap='round';
+  const L=8*DPR;
+  ctx.beginPath();ctx.moveTo(0,-L*1.4);ctx.lineTo(0,L*1.3);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(0,L*1.7);ctx.lineTo(-L*0.7,L*0.6);ctx.lineTo(L*0.7,L*0.6);ctx.closePath();ctx.fill();
+  ctx.restore();
+  ctx.fillStyle='rgba(255,255,255,.85)';ctx.font=`${9*DPR}px Nunito`;ctx.textAlign='center';
+  ctx.fillText('VIND',px,py+22*DPR);
+}
+function drawTT(px,py,dir,flut,col,u){
+  ctx.save();
+  ctx.strokeStyle=col; ctx.lineWidth=0.2*u; ctx.lineCap='round';
+  ctx.shadowColor='rgba(0,0,0,.45)'; ctx.shadowBlur=2*DPR;
+  const seg=3, L=0.45*u, bx=px+dir*0.14*u, by=py;
+  ctx.beginPath(); ctx.moveTo(bx,by);
+  for(let i=1;i<=seg;i++){
+    let xx,yy;
+    if(flut){
+      xx = bx + dir*(0.06*u*i) + dir*Math.sin(G.elapsed*20+i*1.4)*0.2*u;
+      yy = by + L*i*0.7 - Math.abs(Math.sin(G.elapsed*15+i*0.8))*0.22*u;
+    } else {
+      xx = bx + dir*0.05*u*i;   // strømmer pænt agterud
+      yy = by + L*i;
+    }
+    ctx.lineTo(xx,yy);
+  }
+  ctx.stroke(); ctx.restore();
+}
+function drawBoat(b,isPlayer){
+  const atwa=Math.abs(angleDiff(b.heading,G.windDir));
+  const luff=atwa<24 || (!b.isAI && Math.abs(b.sheet-idealSheet(atwa))>G.lvl.sheetTol+18);
+  ctx.save();ctx.translate(sx(b.x),sy(b.y));ctx.rotate(b.heading*RAD);
+  const u=Z*(isPlayer?1.4:1.0); // spillerens båd lidt større
+  // kølvand
+  ctx.fillStyle='rgba(255,255,255,.16)';
+  ctx.beginPath();ctx.moveTo(-0.2*u,0.5*u);ctx.lineTo(0,(0.5+1.6*Math.min(1,b.speed/MAX_SPEED))*u);ctx.lineTo(0.2*u,0.5*u);ctx.closePath();ctx.fill();
+  // ror
+  ctx.strokeStyle='rgba(0,0,0,.4)';ctx.lineWidth=0.12*u;
+  ctx.save();ctx.translate(0,0.85*u);ctx.rotate(b.rudder*0.5);
+  ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,0.55*u);ctx.stroke();ctx.restore();
+  // skrog
+  ctx.fillStyle=b.color;ctx.strokeStyle='rgba(0,0,0,.28)';ctx.lineWidth=0.12*u;
+  ctx.beginPath();
+  ctx.moveTo(0,-1.1*u);
+  ctx.quadraticCurveTo(0.7*u,0,0.45*u,0.85*u);
+  ctx.lineTo(-0.45*u,0.85*u);
+  ctx.quadraticCurveTo(-0.7*u,0,0,-1.1*u);
+  ctx.closePath();ctx.fill();ctx.stroke();
+  // mast
+  ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.arc(0,-0.25*u,0.12*u,0,Math.PI*2);ctx.fill();
+  // sejl (optimist = ét sejl). retning = sailSide; bom svinger ud
+  const side=b.sailSide;
+  ctx.fillStyle=luff?'rgba(255,255,255,.5)':b.sail;
+  ctx.strokeStyle='rgba(255,255,255,.65)';ctx.lineWidth=0.1*u;
+  const sa=(b.sheet)*RAD; // skødevinkel
+  const ex=side*Math.sin(sa)*1.4*u, ey=-0.25*u+Math.cos(sa)*1.4*u;
+  if(luff){
+    ctx.beginPath();ctx.moveTo(0,-0.25*u);
+    ctx.quadraticCurveTo(side*0.15*u,(ey-0.25*u)/2,ex*0.6,ey);ctx.stroke();
+  } else {
+    ctx.beginPath();ctx.moveTo(0,-0.25*u);
+    ctx.quadraticCurveTo(side*0.9*u,(ey-0.25*u)/2+0.2*u,ex,ey);
+    ctx.lineTo(0,-0.1*u);ctx.closePath();ctx.fill();ctx.stroke();
+  }
+  // telltales (tegn) – kun på spillerens sejl
+  if(isPlayer){
+    const tt=b._tt||{wf:false,lf:false};
+    const ax=ex*0.30, ay=-0.25*u+(ey+0.25*u)*0.30;   // nær forkanten af sejlet
+    drawTT(ax,ay,-side,tt.wf,'#ff4d4d',u);            // luv (rød)
+    drawTT(ax,ay, side,tt.lf,'#46d27a',u);            // læ (grøn)
+  }
+  ctx.restore();
+  // navn til rivaler – placeret tydeligt OVER båden med mørk kant
+  if(b.isAI){
+    ctx.save();
+    ctx.font=`${10.5*DPR}px Nunito, sans-serif`; ctx.textAlign='center';
+    ctx.lineWidth=3.5*DPR; ctx.strokeStyle='rgba(6,36,62,.9)';
+    ctx.strokeText(b.name,sx(b.x),sy(b.y)-2.4*Z);
+    ctx.fillStyle='rgba(255,255,255,.96)';
+    ctx.fillText(b.name,sx(b.x),sy(b.y)-2.4*Z);
+    ctx.restore();
+  }
+}
+function gaugeBox(x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();
+}
+function drawTrimGauge(){
+  // lodret skøde-måler i højre side, under oversigtskortet
+  const w=10*DPR,h=118*DPR,x=CW-22*DPR,y=192*DPR;
+  ctx.save();
+  ctx.fillStyle='rgba(6,36,62,.55)';gaugeBox(x-4*DPR,y-22*DPR,w+8*DPR,h+34*DPR,8*DPR);ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.7)';ctx.font=`${9*DPR}px Nunito`;ctx.textAlign='center';
+  ctx.fillText('SKØDE',x+w/2,y-10*DPR);
+  // baggrund 0..90 (top = hal ind=0, bund = slæk ud=90)
+  ctx.fillStyle='rgba(255,255,255,.12)';gaugeBox(x,y,w,h,4*DPR);ctx.fill();
+  const b=G.boat, atwa=Math.abs(angleDiff(b.heading,G.windDir)), ideal=idealSheet(atwa), tol=G.lvl.sheetTol;
+  const toY=v=>y+(v/90)*h;
+  // god-zone
+  ctx.fillStyle='rgba(91,209,122,.45)';
+  const z0=toY(clamp(ideal-tol,0,90)),z1=toY(clamp(ideal+tol,0,90));
+  ctx.fillRect(x,Math.min(z0,z1),w,Math.abs(z1-z0));
+  // ideel streg
+  ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=1.5*DPR;
+  ctx.beginPath();ctx.moveTo(x-2*DPR,toY(ideal));ctx.lineTo(x+w+2*DPR,toY(ideal));ctx.stroke();
+  // nuværende
+  const err=Math.abs(b.sheet-ideal);
+  ctx.fillStyle=err<=tol?'#5BD17A':'#FFC93C';
+  const cy=toY(b.sheet);
+  ctx.beginPath();ctx.arc(x+w/2,cy,5*DPR,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.6)';ctx.font=`${8*DPR}px Nunito`;
+  ctx.fillText('hal',x+w/2,y-1*DPR+8*DPR);ctx.fillText('slæk',x+w/2,y+h+10*DPR);
+  ctx.restore();
+}
+function drawRudder(){
+  // ror-indikator nederst i midten
+  const w=90*DPR,h=8*DPR,x=CW/2-w/2,y=CH-22*DPR;
+  ctx.save();
+  ctx.fillStyle='rgba(6,36,62,.5)';gaugeBox(x-6*DPR,y-12*DPR,w+12*DPR,h+20*DPR,6*DPR);ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.7)';ctx.font=`${8.5*DPR}px Nunito`;ctx.textAlign='center';
+  ctx.fillText('ROR',CW/2,y-4*DPR);
+  ctx.fillStyle='rgba(255,255,255,.14)';gaugeBox(x,y,w,h,4*DPR);ctx.fill();
+  const cx=x+w/2+G.boat.rudder*(w/2-4*DPR);
+  ctx.fillStyle=Math.abs(G.boat.rudder)>0.7?'#FFC93C':'#EAF6F8';
+  ctx.beginPath();ctx.arc(cx,y+h/2,5*DPR,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+}
+function drawMinimap(){
+  const mw=64*DPR,mh=90*DPR,mx=CW-mw-12*DPR,my=78*DPR;
+  const wx0=6,wy0=6,ww=90,wh=116;
+  const px=x=>mx+((x-wx0)/ww)*mw, py=y=>my+((y-wy0)/wh)*mh;
+  ctx.save();
+  ctx.fillStyle='rgba(6,36,62,.55)';gaugeBox(mx-5*DPR,my-5*DPR,mw+10*DPR,mh+10*DPR,8*DPR);ctx.fill();
+  // linjer
+  ctx.strokeStyle='rgba(255,255,255,.4)';ctx.lineWidth=1*DPR;
+  ctx.beginPath();ctx.moveTo(px(DBOAT.x),py(DBOAT.y));ctx.lineTo(px(PIN_START.x),py(PIN_START.y));
+  ctx.moveTo(px(DBOAT.x),py(DBOAT.y));ctx.lineTo(px(PIN_FIN.x),py(PIN_FIN.y));ctx.stroke();
+  // mærker
+  const dot=(x,y,c,r)=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(px(x),py(y),(r||2)*DPR,0,Math.PI*2);ctx.fill();};
+  dot(MARKS.top.x,MARKS.top.y,'#ff8c42',2.4);dot(MARKS.slag.x,MARKS.slag.y,'#ff8c42',2.4);dot(MARKS.bund.x,MARKS.bund.y,'#ff8c42',2.4);
+  dot(DBOAT.x,DBOAT.y,'#e9eef2',2.2);
+  // nuværende mål-fremhævning
+  if(G.boat.started && G.boat.leg<3){const t=LEGTGT[G.boat.leg];
+    ctx.strokeStyle='#FFC93C';ctx.lineWidth=1.5*DPR;ctx.beginPath();ctx.arc(px(t.x),py(t.y),4*DPR,0,Math.PI*2);ctx.stroke();}
+  // både
+  for(const a of G.ais) dot(a.x,a.y,a.color,2);
+  dot(G.boat.x,G.boat.y,'#FFC93C',2.6);
+  ctx.restore();
+}
+
+/* ---------- HUD (DOM) ---------- */
+function updateHUD(){
+  if(G.mode==='train'){
+    el('hudCoach').classList.remove('hidden');
+    hudTimer.querySelector('.lab').textContent='KURS';
+    hudTimer.lastChild.nodeValue=pointOfSail(Math.abs(angleDiff(G.boat.heading,G.windDir)));
+    const d=G.drillData;
+    hudPos.querySelector('.lab').textContent='ØVELSE';
+    hudPos.lastChild.nodeValue = G.drill==='tack'?(d.tacks+' vend.')
+        : G.drill==='gybe'?(d.gybes+' bum')
+        : (d.stars+' ★');
+    hudSpeed.lastChild.nodeValue=Math.round(100*G.boat.speed/MAX_SPEED)+'%';
+    const c=coachLine(G.boat);
+    el('hudCoach').innerHTML=`<span class="${c.c}">${c.t}</span>`;
+    const dn={free:'Fri sejlads',trim:'Trim & tegn',tack:'Stagvending',gybe:'Bumning'};
+    hudInstr.innerHTML=`<span>${dn[G.drill]||'Træning'}</span>`;
+    if(G.banner.t && G.elapsed<G.banner.until) hudBanner.innerHTML=`<div class="msg ${G.banner.c}">${G.banner.t}</div>`; else hudBanner.innerHTML='';
+    if(G.tip.t && G.elapsed<G.tip.until) hudTip.innerHTML=`<span>${G.tip.t}</span>`; else hudTip.innerHTML='';
+    if(G.boat._wrong) btnBum.classList.add('pulse'); else btnBum.classList.remove('pulse');
+    return;
+  }
+  el('hudCoach').classList.add('hidden');
+  if(G.phase==='prestart'){
+    hudTimer.querySelector('.lab').textContent='START OM';
+    hudTimer.lastChild.nodeValue='0:'+String(Math.ceil(G.startTimer)).padStart(2,'0');
+  } else if(G.phase==='done'){
+    hudTimer.querySelector('.lab').textContent='I MÅL';
+    hudTimer.lastChild.nodeValue=formatTime(G.boat.finished?G.boat.finishTime:0);
+  } else {
+    hudTimer.querySelector('.lab').textContent='TID';
+    hudTimer.lastChild.nodeValue=formatTime(G.elapsed-G.raceT0);
+  }
+  hudSpeed.lastChild.nodeValue=Math.round(100*G.boat.speed/MAX_SPEED)+'%';
+  // plads
+  const order=[G.boat,...G.ais].slice().sort((a,b)=>boatProgress(b)-boatProgress(a));
+  const pl=order.indexOf(G.boat)+1;
+  hudPos.lastChild.nodeValue=pl+'/4';
+  // instruktion
+  if(G.boat.started && !G.boat.finished && G.phase==='race'){
+    hudInstr.innerHTML=`<span>${LEG_INSTR[Math.min(G.boat.leg,3)]}</span>`;
+  } else if(G.phase==='prestart'){ hudInstr.innerHTML=`<span>Kom tæt på linjen med fart</span>`; }
+  else hudInstr.innerHTML='';
+  // banner
+  if(G.banner.t && G.elapsed<G.banner.until) hudBanner.innerHTML=`<div class="msg ${G.banner.c}">${G.banner.t}</div>`;
+  else if(G.mustDip) hudBanner.innerHTML=`<div class="msg warn">Dyk tilbage under startlinjen!</div>`;
+  else hudBanner.innerHTML='';
+  // tip
+  if(G.tip.t && G.elapsed<G.tip.until) hudTip.innerHTML=`<span>${G.tip.t}</span>`;
+  else hudTip.innerHTML='';
+  // bum-knap pulser når sejlet står forkert på læns
+  if(G.boat._wrong) btnBum.classList.add('pulse'); else btnBum.classList.remove('pulse');
+}
+function boatProgress(b){
+  // grov fremdrift langs banen til placering
+  if(b.finished) return 1000 - b.finishTime;
+  let p=b.leg*100;
+  if(b.started){ const t=LEGTGT[Math.min(b.leg,3)]; p+= -Math.hypot(b.x-t.x,b.y-t.y); }
+  else p=-Math.hypot(b.x-START_MID.x,b.y-START_MID.y)-200;
+  return p;
+}
+
+/* ============================================================
+   LÆR DET
+   ============================================================ */
+const lessons=[
+  {emoji:'🧭',tag:'KRYDS',title:'Vinden & krydset',
+   text:'En båd kan ikke sejle lige imod vinden – tæt på vinden flagrer sejlet bare (“no-go zonen”). For at komme op mod vinden krydser du i siksak, ca. 45° til hver side. Hver gang du skifter side, laver du en <b>stagvending</b>.'},
+  {emoji:'🪢',tag:'SKØDE',title:'Skøden – trim sejlet',
+   text:'Skøden styrer, hvor langt sejlet er ude. Tommelfingerregel: <b>hal ind</b>, når du sejler op mod vinden, og <b>slæk ud</b>, når du bærer af og sejler læns. I spillet viser den grønne zone, hvornår trimmet er rigtigt – så får du mest fart.'},
+  {emoji:'🎏',tag:'TEGN',title:'De to tegn (telltales)',
+   text:'På sejlet sidder to små tegn: et i <b>luv</b> (mod vinden) og et i <b>læ</b>. Strømmer begge lige bagud, har du <b>perfekt trim</b> og mest fart. Blafrer luv-tegnet, luffer du for højt eller har for løst sejl – bær lidt af eller hal ind. Blafrer læ-tegnet, er sejlet for hårdt – slæk lidt ud.'},
+  {emoji:'🛟',tag:'ROR',title:'Ror & fart',
+   text:'Roret drejer båden – men <b>for meget ror bremser</b>, fordi det virker som en bremse i vandet. Drej blødt og lidt ad gangen. Og husk: står båden stille, kan roret næsten ikke dreje den. Hold farten, så styrer du bedst.'},
+  {emoji:'🚦',tag:'START',title:'Den perfekte start',
+   text:'Du starter på <b>bagbord side</b> af dommerbåden. Du må ikke være over linjen, når signalet lyder – så er det <b>tyvstart</b>, og du skal tilbage. Det bedste: ram linjen med fuld fart i præcis det sekund, det smælder.'},
+  {emoji:'🔄',tag:'BUMNING',title:'Mærker & bumning',
+   text:'På læns (vinden i ryggen) sidder sejlet ude på den ene side. Når du runder slagmærket og skal den anden vej, skal sejlet over på den anden side – det kaldes at <b>bumme</b> (gybe). Tryk BUM på det rigtige tidspunkt, så beholder du farten.'},
+  {emoji:'🌬️',tag:'VIND',title:'Vindspring – løft & header',
+   text:'Vinden drejer hele tiden lidt – et <b>vindspring</b>. Drejer den, så du kan pege tættere på mærket, er det et <b>løft</b> (godt!). Drejer den modsat, er det et <b>header</b> – så er det tit smart at <b>vende</b> over på den anden bov.'},
+];
+function renderLessons(){
+  el('lessonList').innerHTML=lessons.map(l=>`
+    <div class="lesson">
+      <div class="figure">${l.emoji}</div>
+      <div><h3>${l.title}</h3><p>${l.text}</p><span class="tag">${l.tag}</span></div>
+    </div>`).join('');
+}
+
+/* ============================================================
+   QUIZ
+   ============================================================ */
+const quizData=[
+  {q:'Hvorfor kan en jolle ikke sejle lige imod vinden?',opts:['Fordi sejlet ikke kan fyldes – man havner i “no-go zonen”','Fordi roret falder af','Fordi det er forbudt i reglerne'],a:0},
+  {q:'Hvad gør du med skøden, når du bærer af og begynder at sejle læns?',opts:['Haler den helt ind','Slækker den ud','Slipper roret'],a:1},
+  {q:'Hvorfor skal man dreje blødt med roret?',opts:['For at se smart ud','For meget ror virker som en bremse og koster fart','Roret er ligegyldigt'],a:1},
+  {q:'Du krydser startlinjen FØR startsignalet. Hvad sker der?',opts:['Du har vundet','Tyvstart – du skal tilbage under linjen','Ingenting'],a:1},
+  {q:'Hvad kalder man det at skifte sejlet over på den anden side, når man sejler læns?',opts:['At ankre','At bumme (gybe)','At reve'],a:1},
+  {q:'Vinden drejer til en ny retning. Hvad kalder sejlere det?',opts:['Et vindspring','En bølge','En kæntring'],a:0},
+  {q:'Hvilken kurs er cirka hurtigst i forhold til vinden?',opts:['Lige imod vinden','Når vinden kommer ind fra siden (halvvind)','Lige med vinden i ryggen'],a:1},
+  {q:'Hvad er en rigtig god start?',opts:['At starte langt bagved','At ramme linjen med fuld fart, lige når signalet lyder','At vente til alle andre er sejlet'],a:1},
+];
+let qi=0,qscore=0,qlock=false;const quizBox=el('quizBox');
+function startQuiz(){qi=0;qscore=0;renderQuestion();}
+function renderQuestion(){
+  if(qi>=quizData.length){renderQuizResult();return;}
+  qlock=false;const it=quizData[qi];
+  quizBox.innerHTML=`
+    <div class="qprogress">SPØRGSMÅL ${qi+1} / ${quizData.length} · POINT: ${qscore}</div>
+    <div class="qcard"><h3>${it.q}</h3>
+      <div id="opts">${it.opts.map((o,i)=>`<button class="opt" data-i="${i}">${o}</button>`).join('')}</div>
+      <div class="qfeedback" id="qfb"></div>
+      <div class="qnext hidden" id="qnext"><button class="actionbtn" id="nextQ">${qi===quizData.length-1?'Se resultat':'Næste ›'}</button></div>
+    </div>`;
+  quizBox.querySelectorAll('.opt').forEach(b=>b.addEventListener('click',()=>answer(b)));
+}
+function answer(btn){
+  if(qlock)return;qlock=true;
+  const i=+btn.dataset.i,it=quizData[qi],opts=quizBox.querySelectorAll('.opt');
+  opts.forEach(o=>o.classList.add('lock'));opts[it.a].classList.add('correct');
+  const fb=el('qfb');
+  if(i===it.a){qscore++;fb.textContent='Rigtigt! 🎉';fb.className='qfeedback ok';}
+  else{btn.classList.add('wrong');fb.textContent='Ikke helt – det rigtige er markeret med grønt.';fb.className='qfeedback no';}
+  el('qnext').classList.remove('hidden');
+  el('nextQ').addEventListener('click',()=>{qi++;renderQuestion();});
+}
+function renderQuizResult(){
+  const pct=Math.round(100*qscore/quizData.length);let msg,emoji;
+  if(qscore===quizData.length){msg='Fuldt hus! Du er en rigtig kapsejladsekspert.';emoji='🏆';}
+  else if(pct>=70){msg='Flot klaret! Du kan det meste.';emoji='🥈';}
+  else if(pct>=40){msg='Godt forsøg – læs lektionerne og prøv igen!';emoji='⛵️';}
+  else{msg='Kig forbi “Lær det” og kom stærkt tilbage!';emoji='🧭';}
+  quizBox.innerHTML=`<div class="qcard qresult"><div style="font-size:46px">${emoji}</div>
+    <div class="score">${qscore} / ${quizData.length}</div>
+    <p style="font-weight:700;font-size:17px;margin:4px 0 16px">${msg}</p>
+    <div><button class="actionbtn" id="qAgain">Prøv igen</button></div>
+    <div><button class="ghostbtn" id="qLearn">Lær det</button></div></div>`;
+  el('qAgain').addEventListener('click',startQuiz);
+  el('qLearn').addEventListener('click',()=>show('learn'));
+}
+
+/* start */
+show('menu');
+</script>
+</body>
+</html>
