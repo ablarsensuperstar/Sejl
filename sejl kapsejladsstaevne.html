@@ -104,6 +104,15 @@
   .actionbtn:active{transform:translateY(4px);box-shadow:0 2px 0 #d6a418;}
   .ghostbtn{border:0;cursor:pointer;font-family:'Fredoka';font-weight:600;font-size:15px;color:var(--foam);
     background:rgba(255,255,255,.14);border-radius:14px;padding:11px 18px;margin:8px 6px 0;}
+  .difflist{display:flex;flex-direction:column;gap:9px;margin:14px 0 4px;}
+  .diffbtn{border:0;cursor:pointer;font-family:'Fredoka';text-align:left;color:var(--ink);
+    background:linear-gradient(180deg,#fff,#e6f2f5);border-radius:14px;padding:11px 15px;
+    box-shadow:0 4px 0 #9fc0c9,0 7px 13px rgba(0,0,0,.18);transition:transform .05s,box-shadow .05s;
+    display:flex;flex-direction:column;gap:2px;}
+  .diffbtn:active{transform:translateY(3px);box-shadow:0 1px 0 #9fc0c9;}
+  .diffbtn .diffname{font-weight:700;font-size:18px;}
+  .diffbtn .diffsub{font-family:'Nunito';font-weight:700;font-size:12.5px;opacity:.72;line-height:1.3;}
+  .diffbtn.sel{outline:3px solid var(--sun);background:linear-gradient(180deg,#fff,#ffe9b8);}
 
   /* control deck */
   .deck{max-width:600px;margin:12px auto 0;display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:auto auto;gap:10px;}
@@ -232,7 +241,7 @@ function show(name){
   const sc=(name==='train')?'race':name;
   for(const k in screens) screens[k].classList.toggle('hidden', k!==sc);
   backBtn.classList.toggle('hidden', name==='menu');
-  if(name==='race'){ MODE='race'; startSeries(); }
+  if(name==='race'){ MODE='race'; showDifficulty(); }
   else if(name==='train'){ MODE='train'; startTraining(); }
   else stopRace();
   if(name==='learn') renderLessons();
@@ -264,15 +273,15 @@ function idealSheet(atwa){ return clamp((atwa-18)*0.62, 4, 86); }
 /* ============================================================
    BANE (verdenskoordinater, x:6..94  y:5..97)
    ============================================================ */
-const DBOAT={x:58,y:82};                 // dommerbåd
-const PIN_START={x:42,y:82};             // startens bagbordsende
-const PIN_FIN={x:74,y:82};               // målets styrbordsende
-const START_MID={x:50,y:82};
-const FINISH_MID={x:66,y:82};
+const DBOAT={x:58,y:80};                 // dommerbåd
+const PIN_START={x:42,y:80};             // startens bagbordsende
+const PIN_FIN={x:74,y:80};               // målets styrbordsende
+const START_MID={x:50,y:80};
+const FINISH_MID={x:66,y:80};
 const MARKS={
-  top: {x:50,y:12,r:5,name:'Topmærke'},
-  slag:{x:10,y:48,r:5,name:'Slagmærke'},
-  bund:{x:50,y:118,r:5,name:'Bundmærke'},
+  top: {x:50,y:-4,r:5,name:'Topmærke'},
+  slag:{x:12,y:52,r:5,name:'Slagmærke'},
+  bund:{x:64,y:124,r:5,name:'Bundmærke'},
 };
 const LEGTGT=[MARKS.top, MARKS.slag, MARKS.bund, FINISH_MID];
 const LEG_INSTR=[
@@ -288,24 +297,55 @@ const MAX_SPEED=9.0, BASE_TURN=98, VIEW=48;
    NIVEAUER (6 sejladser, stigende sværhedsgrad)
    ============================================================ */
 const LEVELS=[
-  {name:'Rolig vind', desc:'Stabil vind og blide vindspring. Perfekt til at lære roret og skøden.', shiftAmp:7, shiftEvery:11, gust:0.05, aiSkill:[0.85,0.89,0.92], sheetTol:22, startTime:20},
-  {name:'Let brise',  desc:'Lidt flere vindspring. Hold øje med vinden.', shiftAmp:11, shiftEvery:9, gust:0.08, aiSkill:[0.89,0.92,0.95], sheetTol:18, startTime:18},
-  {name:'Frisk vind', desc:'Vinden drejer mere. Brug krydset klogt.', shiftAmp:15, shiftEvery:8, gust:0.11, aiSkill:[0.92,0.95,0.97], sheetTol:15, startTime:16},
-  {name:'Hård vind',  desc:'Store vindspring og vindpust. Trim præcist.', shiftAmp:19, shiftEvery:7, gust:0.15, aiSkill:[0.95,0.97,0.985], sheetTol:12, startTime:15},
-  {name:'Kuling',     desc:'Vild vind. Blødt ror og skarp skøde afgør det.', shiftAmp:24, shiftEvery:6, gust:0.19, aiSkill:[0.97,0.985,0.995], sheetTol:10, startTime:14},
-  {name:'Mesterskab', desc:'Alt på spil mod de bedste sejlere.', shiftAmp:28, shiftEvery:5.5, gust:0.22, aiSkill:[0.985,0.995,1.0], sheetTol:8, startTime:12},
+  {name:'Rolig vind', desc:'Stabil vind og blide vindspring. Perfekt til at lære roret og skøden.', shiftAmp:7, shiftEvery:11, gust:0.05, aiSkill:[0.90,0.92,0.93,0.95], sheetTol:22, startTime:20},
+  {name:'Let brise',  desc:'Lidt flere vindspring. Hold øje med vinden.', shiftAmp:11, shiftEvery:9, gust:0.08, aiSkill:[0.92,0.93,0.95,0.96], sheetTol:18, startTime:18},
+  {name:'Frisk vind', desc:'Vinden drejer mere. Brug krydset klogt.', shiftAmp:15, shiftEvery:8, gust:0.11, aiSkill:[0.93,0.95,0.96,0.975], sheetTol:15, startTime:16},
+  {name:'Hård vind',  desc:'Store vindspring og vindpust. Trim præcist.', shiftAmp:19, shiftEvery:7, gust:0.15, aiSkill:[0.95,0.96,0.975,0.985], sheetTol:12, startTime:15},
+  {name:'Kuling',     desc:'Vild vind. Blødt ror og skarp skøde afgør det.', shiftAmp:24, shiftEvery:6, gust:0.19, aiSkill:[0.965,0.975,0.985,0.99], sheetTol:10, startTime:14},
+  {name:'Mesterskab', desc:'Alt på spil mod de bedste sejlere.', shiftAmp:28, shiftEvery:5.5, gust:0.22, aiSkill:[0.98,0.99,0.995,1.0], sheetTol:8, startTime:12},
 ];
-const RIVALS=['Laura','Mads','Sofie'];
-const RIVAL_COLORS=['#5BD17A','#FF8A5C','#C792FF'];
-const RIVAL_SAILS=['#dff7e6','#ffe2d4','#ece0ff'];
+const RIVALS=['Laura','Mads','Sofie','Oliver'];
+const RIVAL_COLORS=['#5BD17A','#FF8A5C','#C792FF','#7AA8FF'];
+const RIVAL_SAILS=['#dff7e6','#ffe2d4','#ece0ff','#dceaff'];
+
+/* ============================================================
+   SVÆRHEDSGRADER (vælges fra start – niveau 4 = den hidtidige)
+   skill: ganges på modstandernes fart · wind: ganges på vindspring/pust · start: ganges på starttiden
+   ============================================================ */
+const DIFFS=[
+  {name:'Ælling',  emoji:'🐤', sub:'Helt rolig vind, og modstanderne sejler stille og roligt.', skill:0.80, wind:0.55, start:1.6},
+  {name:'Delfin',  emoji:'🐬', sub:'Lidt mere liv i vinden og lidt mere fart i feltet.',          skill:0.88, wind:0.72, start:1.35},
+  {name:'Søløve',  emoji:'🦭', sub:'Jævnbyrdige modstandere – nu er det rigtig kapsejlads.',      skill:0.94, wind:0.86, start:1.15},
+  {name:'Haj',     emoji:'🦈', sub:'Skarpe modstandere og krævende vind.',                        skill:1.00, wind:1.00, start:1.0},
+  {name:'Kraken',  emoji:'🐙', sub:'Havets allerhårdeste – kun for mestre!',                       skill:1.06, wind:1.18, start:0.85},
+];
+let DIFF=3;   // standard = niveau 4 (Haj)
 
 /* ============================================================
    STÆVNE-TILSTAND
    ============================================================ */
 let REG=null;
+function showDifficulty(){
+  stopRaceLoop();
+  resultOv.classList.add('hidden');
+  introOv.classList.remove('hidden');
+  deck.style.visibility='hidden';
+  const cards=DIFFS.map((d,i)=>`<button class="diffbtn${i===DIFF?' sel':''}" data-d="${i}">
+        <span class="diffname">${d.emoji} Niveau ${i+1}: ${d.name}</span>
+        <span class="diffsub">${d.sub}</span></button>`).join('');
+  introOv.innerHTML=`
+    <div class="panel">
+      <div class="eyebrow">VÆLG SVÆRHEDSGRAD</div>
+      <h2>Hvor vilde modstandere?</h2>
+      <p style="opacity:.85;font-size:13px">Du kan altid prøve igen på en anden sværhedsgrad.</p>
+      <div class="difflist">${cards}</div>
+    </div>`;
+  introOv.querySelectorAll('.diffbtn').forEach(b=>b.addEventListener('click',()=>{ DIFF=+b.dataset.d; startSeries(); }));
+  resize(); drawPreview();
+}
 function startSeries(){
   REG={raceNo:1, total:6, points:{}, finishes:{}};
-  for(const n of ['Dig',...RIVALS]){ REG.points[n]=[]; }
+  for(const n of ['Emilie',...RIVALS]){ REG.points[n]=[]; }
   showIntro();
 }
 function showIntro(){
@@ -316,13 +356,16 @@ function showIntro(){
   const lvl=LEVELS[REG.raceNo-1];
   introOv.innerHTML=`
     <div class="panel">
-      <div class="eyebrow">SEJLADS ${REG.raceNo} AF ${REG.total}</div>
-      <h2>Niveau ${REG.raceNo}: ${lvl.name}</h2>
+      <div class="eyebrow">SEJLADS ${REG.raceNo} AF ${REG.total} · ${DIFFS[DIFF].emoji} ${DIFFS[DIFF].name}</div>
+      <h2>${lvl.name}</h2>
       <p>${lvl.desc}</p>
       <p style="opacity:.8;font-size:13px">Banen: start ved bagbord side af dommerbåden ▸ kryds til topmærket ▸ læns til slagmærket (bum!) ▸ læns til bundmærket ▸ kryds i mål.</p>
       <button class="actionbtn" id="goBtn">Gør klar til start ⛵️</button>
+      <div><button class="ghostbtn" id="collBtn">Sammenstød: ${COLLIDE?'TIL':'FRA'}</button><button class="ghostbtn" id="diffBack">Skift sværhedsgrad</button></div>
     </div>`;
   el('goBtn').addEventListener('click', ()=>startRace(REG.raceNo-1));
+  el('collBtn').addEventListener('click', ()=>{ COLLIDE=!COLLIDE; el('collBtn').textContent='Sammenstød: '+(COLLIDE?'TIL':'FRA'); });
+  el('diffBack').addEventListener('click', showDifficulty);
   // tegn en stille forhåndsvisning af banen bagved
   resize(); drawPreview();
 }
@@ -341,21 +384,25 @@ const hudInstr=el('hudInstr'),hudBanner=el('hudBanner'),hudTip=el('hudTip');
 const introOv=el('introOv'),resultOv=el('resultOv'),deck=el('deck'),btnBum=el('btnBum');
 
 function resize(){
-  const r=cv.getBoundingClientRect();
+  const frame=cv.parentElement||cv;
+  const w=frame.clientWidth || cv.clientWidth || Math.min(window.innerWidth||320,600);
+  frame.style.height=w+'px';                 // kvadratisk – virker uden CSS aspect-ratio
   DPR=Math.min(window.devicePixelRatio||1,2);
-  CW=Math.max(1,Math.round(r.width*DPR));
-  CH=Math.max(1,Math.round(r.height*DPR));
+  CW=Math.max(1,Math.round(w*DPR));
+  CH=CW;
   cv.width=CW; cv.height=CH;
   Z=CW/VIEW;
 }
+window.addEventListener('orientationchange',()=>{ if(G||REG) setTimeout(resize,150); });
 window.addEventListener('resize',()=>{ if(G||REG) resize(); });
 
 function sx(x){return (x-cam.x)*Z+CW/2;}
 function sy(y){return (y-cam.y)*Z+CH/2;}
 
+let COLLIDE=true;
 function newBoat(x,y,o){
   const b=Object.assign({x,y,heading:0,speed:0,rudder:0,sheet:30,sailSide:1,
-    started:false,leg:0,finished:false,finishTime:0,_prevY:y,gybeT:0,_wrong:false,
+    started:false,leg:0,finished:false,finishTime:0,_prevY:y,gybeT:0,_wrong:false,rphase:'app',rseen:false,
     isAI:false,skill:1,tack:1,name:'',color:'#fff',sail:'#fff',lane:50},o||{});
   b.sailSide = angleDiff(b.heading,0)>=0 ? -1 : 1;   // sejlet i læ fra start (vind fra 0)
   b._prevTwaS = angleDiff(b.heading,0);
@@ -370,21 +417,21 @@ function startRace(levelIdx){
   deck.style.visibility='visible';
   G={
     lvl, levelIdx, phase:'prestart', elapsed:0, raceT0:0,
-    startTimer:lvl.startTime, raceStarted:false, mustDip:false,
-    windDir:0, windTarget:0, shiftTimer:lvl.shiftEvery*0.5, gustPhase:Math.random()*6,
-    boat:newBoat(50,92,{heading:8,sheet:14,color:'#FFC93C',sail:'#fff5d6',name:'Dig'}),
+    startTimer:lvl.startTime*DIFFS[DIFF].start, raceStarted:false, mustDip:false,
+    windDir:0, windTarget:0, shiftTimer:lvl.shiftEvery*0.5, gustPhase:Math.random()*6, windMul:DIFFS[DIFF].wind,
+    boat:newBoat(52,86,{heading:270,sheet:idealSheet(90),color:'#FF5CAE',sail:'#ffd9ec',name:'Emilie'}),
     ais:[],
     banner:{t:'',c:'',until:0}, tip:{t:'',until:0}, noGo:0,
     streaks:makeStreaks(),
   };
-  const lanes=[46,53,56];
-  for(let i=0;i<3;i++){
-    G.ais.push(newBoat(lanes[i],92+(i%2),{isAI:true,skill:lvl.aiSkill[i],heading:6,
+  const lanes=[43,47,53,57];
+  for(let i=0;i<RIVALS.length;i++){
+    G.ais.push(newBoat(lanes[i],86+(i%2),{isAI:true,skill:clamp(lvl.aiSkill[i]*DIFFS[DIFF].skill,0.5,1.08),heading:270,
       color:RIVAL_COLORS[i],sail:RIVAL_SAILS[i],name:RIVALS[i],lane:lanes[i],sheet:14}));
   }
   cam.x=G.boat.x; cam.y=G.boat.y;
   setBanner('Gør klar til start!','',2);
-  setTip('Bliv UNDER startlinjen, til nedtællingen er slut.',4.5);
+  setTip('Sejl frem og tilbage LANGS linjen – og drej OP mod start, når det smælder. Bliv under linjen indtil da.',5);
   lastT=(typeof performance!=='undefined'?performance.now():0);
   startRaceLoop();
 }
@@ -421,7 +468,7 @@ function beginTrain(drill){
   G={ lvl, levelIdx:1, mode:'train', drill, phase:'race', elapsed:0, raceT0:0,
       startTimer:0, raceStarted:true, mustDip:false,
       windDir:0, windTarget:0, shiftTimer:lvl.shiftEvery, gustPhase:0, gust:1,
-      boat:newBoat(s.x,s.y,{heading:s.h,sheet:idealSheet(Math.abs(angleDiff(s.h,0))),color:'#FFC93C',sail:'#fff5d6',name:'Dig',started:true,leg:0}),
+      boat:newBoat(s.x,s.y,{heading:s.h,sheet:idealSheet(Math.abs(angleDiff(s.h,0))),color:'#FF5CAE',sail:'#ffd9ec',name:'Emilie',started:true,leg:0}),
       ais:[], banner:{t:'',c:'',until:0}, tip:{t:'',until:0}, noGo:0, streaks:makeStreaks(),
       drillData:{tacks:0,gybes:0,trimT:0,stars:0} };
   cam.x=G.boat.x; cam.y=G.boat.y;
@@ -496,11 +543,12 @@ function update(dt){
   G.shiftTimer-=dt;
   if(G.shiftTimer<=0){
     G.shiftTimer=lvl.shiftEvery*(0.7+Math.random()*0.6);
-    G.windTarget=clamp((Math.random()*2-1)*lvl.shiftAmp,-lvl.shiftAmp,lvl.shiftAmp);
+    const amp=lvl.shiftAmp*(G.windMul||1);
+    G.windTarget=clamp((Math.random()*2-1)*amp,-amp,amp);
     if(G.raceStarted){ setBanner('Vindspring! 🌬️','',1.5); setTip('Vinden drejer – kan du nu pege tættere mod mærket? Ellers vend!',3.4); }
   }
   G.windDir=lerpAngle(G.windDir,G.windTarget,1-Math.pow(0.5,dt*1.1));
-  G.gust=1+lvl.gust*Math.sin((G.elapsed+G.gustPhase)*1.25);
+  G.gust=1+lvl.gust*(G.windMul||1)*Math.sin((G.elapsed+G.gustPhase)*1.25);
 
   // nedtælling
   if(G.phase==='prestart'){
@@ -521,18 +569,39 @@ function update(dt){
 
   for(const a of G.ais){ controlAI(a,dt); physics(a,dt); checkLeg(a); }
 
-  // sammenstød: både kan ikke sejle igennem hinanden
-  const boats=[G.boat,...G.ais];
-  for(let i=0;i<boats.length;i++)for(let j=i+1;j<boats.length;j++){
-    const a=boats[i], c=boats[j];
-    if(a.finished||c.finished) continue;
-    let dx=c.x-a.x, dy=c.y-a.y, d=Math.hypot(dx,dy); const minD=2.4;
-    if(d<minD && d>0.001){
-      const nx=dx/d, ny=dy/d, push=(minD-d)/2;
-      a.x-=nx*push; a.y-=ny*push; c.x+=nx*push; c.y+=ny*push;
-      a.x=clamp(a.x,6,96); a.y=clamp(a.y,4,124); c.x=clamp(c.x,6,96); c.y=clamp(c.y,4,124);
-      a.speed*=0.6; c.speed*=0.6;
-      if(a===G.boat||c===G.boat){ if(!G._bumpT||G.elapsed-G._bumpT>1.3){ setBanner('Sammenstød! 💥','warn',1.1); setTip('Hold afstand til de andre både!',1.6); G._bumpT=G.elapsed; } }
+  // sammenstød: både kan ikke sejle igennem hinanden (kan slås fra i menuen)
+  if(COLLIDE){
+    const boats=[G.boat,...G.ais];
+    for(let i=0;i<boats.length;i++)for(let j=i+1;j<boats.length;j++){
+      const a=boats[i], c=boats[j];
+      if(a.finished||c.finished) continue;
+      let dx=c.x-a.x, dy=c.y-a.y, d=Math.hypot(dx,dy); const minD=2.4;
+      if(d<minD && d>0.001){
+        const nx=dx/d, ny=dy/d, push=(minD-d)/2;
+        a.x-=nx*push; a.y-=ny*push; c.x+=nx*push; c.y+=ny*push;
+        a.x=clamp(a.x,-22,122); a.y=clamp(a.y,-22,142); c.x=clamp(c.x,-22,122); c.y=clamp(c.y,-22,142);
+        a.speed*=0.6; c.speed*=0.6;
+        if(a===G.boat||c===G.boat){ if(!G._bumpT||G.elapsed-G._bumpT>1.3){ setBanner('Sammenstød! 💥','warn',1.1); setTip('Hold afstand til de andre både!',1.6); G._bumpT=G.elapsed; } }
+      }
+    }
+  }
+
+  // faste bøjer: sejler man ind i et mærke sidder man fast (uanset om sammenstød er til/fra)
+  {
+    const solids=[MARKS.top,MARKS.slag,MARKS.bund,PIN_START,PIN_FIN];
+    for(const bo of [G.boat,...G.ais]){
+      if(bo.finished) continue;
+      for(const m of solids){
+        const dx=bo.x-m.x, dy=bo.y-m.y, d=Math.hypot(dx,dy), hit=1.9;
+        if(d<hit && d>0.0001){
+          const nx=dx/d, ny=dy/d;
+          bo.x=m.x+nx*hit; bo.y=m.y+ny*hit;   // ingen kan trænge igennem en bøje
+          if(bo===G.boat){
+            bo.speed*=0.2;                      // spilleren sidder fast – mister farten
+            if(!G._markT||G.elapsed-G._markT>1.2){ setBanner('Du sejlede ind i mærket! 🟠','warn',1.2); setTip('Styr uden om bøjen for at komme fri!',1.8); G._markT=G.elapsed; }
+          } else bo.speed*=0.9;                 // modstandere strejfer kun
+        }
+      }
     }
   }
 
@@ -613,7 +682,7 @@ function physics(b,dt){
   b.heading=norm360(b.heading+b.rudder*BASE_TURN*flow*dt);
   b.x+=Math.sin(b.heading*RAD)*b.speed*dt;
   b.y+=-Math.cos(b.heading*RAD)*b.speed*dt;
-  b.x=clamp(b.x,6,96); b.y=clamp(b.y,4,124);
+  b.x=clamp(b.x,-22,122); b.y=clamp(b.y,-22,142);
   if(!b.isAI){
     if(atwa<26){G.noGo+=dt; if(G.noGo>1 && G.mode!=='train'){setTip('Sejlet flagrer – drej VÆK fra vinden!',1.4);G.noGo=0.3;}}
     else G.noGo=0;
@@ -659,14 +728,15 @@ function checkLeg(b){
     b._prevY=b.y; return;
   }
   if(b.leg<3){
-    const m=LEGTGT[b.leg];
-    if(Math.hypot(b.x-m.x,b.y-m.y)<m.r+2.8){
-      b.leg++;
-      if(!b.isAI){
+    if(!b.isAI){
+      const m=LEGTGT[b.leg];
+      if(Math.hypot(b.x-m.x,b.y-m.y)<m.r+2.8){
+        b.leg++;
         if(b.leg<4) legPrompt(b.leg);
         if(b.leg===2) setTip('Forbi slagmærket – husk at bumme, så sejlet er på den rigtige side!',3.2);
       }
     }
+    // AI: runding håndteres i aiRound (controlAI)
   } else {
     if(b._prevY>=DBOAT.y && b.y<DBOAT.y && b.x>DBOAT.x-2 && b.x<PIN_FIN.x+3){
       if(G.mode==='train'){ setBanner('Banen gennemført! 🎉 Tag en omgang til.','good',2.6); b.leg=0; b._prevY=b.y; return; }
@@ -679,46 +749,73 @@ function checkLeg(b){
 function legPrompt(leg){ if(leg<4) setBanner(LEG_INSTR[leg],'',1.8); }
 
 /* ---------- AI ---------- */
-function aiMarkTarget(b){
-  const M=LEGTGT[b.leg];
-  if(b.leg>=3) return M;                       // mål: bare krydse linjen
-  const prevPt=b.leg===0?START_MID:LEGTGT[b.leg-1];
-  const N=LEGTGT[b.leg+1];
-  const inx=M.x-prevPt.x, iny=M.y-prevPt.y, il=Math.hypot(inx,iny)||1;
-  const exx=N.x-M.x, exy=N.y-M.y, el=Math.hypot(exx,exy)||1;
-  const exu={x:exx/el,y:exy/el};
-  const cross=(inx/il)*exu.y-(iny/il)*exu.x;
-  const sgn=cross>=0?1:-1;
-  const perp={x:-exu.y*sgn, y:exu.x*sgn};       // udvendig side af svinget
-  // sigt mod et punkt lige uden for bøjen på rundingssiden -> båden buer udenom
-  return {x:M.x+perp.x*(M.r+1.2), y:M.y+perp.y*(M.r+1.2)};
+// AI runder mærket HELT udenom i to faser: ind på ydersiden, så rundt og ud mod næste mærke.
+const ROUND = {
+  0:{od:{x:0,y:-1}, dir:-1},   // topmærke: nord om
+  1:{od:{x:-1,y:0}, dir:-1},   // slagmærke: vest om
+  2:{od:{x:0,y:1},  dir:-1},   // bundmærke: syd om
+};
+function aiRound(b){
+  const M=LEGTGT[b.leg], N=LEGTGT[b.leg+1]||FINISH_MID;
+  const cfg=ROUND[b.leg], od=cfg.od;
+  const Rr=6.5, Rin=Rr+9;
+  const rx=b.x-M.x, ry=b.y-M.y, dM=Math.hypot(rx,ry)||0.001;
+  const outer=rx*od.x+ry*od.y;                       // hvor langt ude på den udvendige side
+  const el=Math.hypot(N.x-M.x,N.y-M.y)||1, ex={x:(N.x-M.x)/el,y:(N.y-M.y)/el};
+  const towardN=rx*ex.x+ry*ex.y;                     // på vej mod næste mærke
+  if(dM>Rin && !b.rseen) return {x:M.x+rx/dM*Rr, y:M.y+ry/dM*Rr};  // hen til rundingscirklen fra egen side
+  if(outer>Rr*0.5) b.rseen=true;                     // har rundet på den udvendige side
+  if(b.rseen && towardN>Rr*0.1){ b.leg++; b.rseen=false; b._jr={x:M.x,y:M.y}; return {x:N.x,y:N.y}; }  // -> næste mærke
+  const ang=Math.atan2(ry,rx), ca=ang+cfg.dir*0.7;   // kreds om bøjen
+  return {x:M.x+Math.cos(ca)*Rr, y:M.y+Math.sin(ca)*Rr};
 }
-function aiDesired(b){
-  if(!b.started){
-    // styr op gennem startporten nær midten
-    const tx=START_MID.x;
-    return b.x>tx ? norm360(G.windDir-46) : norm360(G.windDir+46);
-  }
-  const t=aiMarkTarget(b);
+function aiHeadingTo(b,t){
   const bearing=norm360(Math.atan2(t.x-b.x,-(t.y-b.y))/RAD);
   const twaTgt=Math.abs(angleDiff(bearing,G.windDir));
-  if(twaTgt>=44) return bearing;        // kan sejle direkte
+  if(twaTgt>=44) return bearing;        // kan sejle direkte (læns/halvvind)
   const chR=norm360(G.windDir+46), chL=norm360(G.windDir-46);
-  if(b.x<t.x-3) b.tack=1; else if(b.x>t.x+3) b.tack=-1;
+  if(b.x<t.x-6) b.tack=1; else if(b.x>t.x+6) b.tack=-1;
   return b.tack>0?chR:chL;
+}
+function aiDesired(b){    // ren version uden sideeffekter (auto-pilot/test)
+  if(!b.started){ return b.x>START_MID.x ? norm360(G.windDir-46) : norm360(G.windDir+46); }
+  const t = b.leg>=3 ? FINISH_MID : LEGTGT[b.leg];
+  return aiHeadingTo(b,t);
 }
 function controlAI(b,dt){
   if(b.finished) return;
   if(G.phase==='prestart'){
-    // hold under linjen til start
-    let des=180;
-    if(b.y<DBOAT.y+5) des=180;
-    else { des=b.lane<50?20:340; }
-    if(b.y<DBOAT.y+3) des=180;
+    const L=DBOAT.y, side=b.x>START_MID.x?-1:1;
+    let des;
+    if(b.y<L+3) des=G.windDir;                       // for tæt på linjen -> luff op (brems)
+    else if(b.x<PIN_START.x-2) des=norm360(G.windDir+60);   // for langt til bagbord
+    else if(b.x>DBOAT.x+2) des=norm360(G.windDir-60);       // for langt til styrbord
+    else des=norm360(G.windDir+side*58);             // ellers: reach op mod linjens midte
     const dh=angleDiff(des,b.heading); b.rudder=clamp(dh/40,-1,1);
     return;
   }
-  const des=aiDesired(b);
+  let des;
+  if(!b.started){                                    // kryds linjen på en fart-givende reach
+    const side=b.x>START_MID.x?-1:1;
+    des=norm360(G.windDir+side*58);
+  }
+  else if(b.leg<3) des=aiHeadingTo(b, aiRound(b));   // runder mærket udenom
+  else des=aiHeadingTo(b, {x:70,y:78});            // kryds i mål (mod østsiden, væk fra bundmærket)
+  if(b._jr){                                         // kom fri af det netop rundede mærke
+    const jx=b.x-b._jr.x, jy=b.y-b._jr.y, jd=Math.hypot(jx,jy)||1;
+    if(jd<10){
+      const tg=b.leg>=3?FINISH_MID:LEGTGT[b.leg];
+      const nx=tg.x-b.x, ny=tg.y-b.y, nl=Math.hypot(nx,ny)||1;
+      const t1x=-jy/jd,t1y=jx/jd, t2x=jy/jd,t2y=-jx/jd;          // de to tangenter
+      const tan=(t1x*nx/nl+t1y*ny/nl)>=(t2x*nx/nl+t2y*ny/nl)?{x:t1x,y:t1y}:{x:t2x,y:t2y};
+      des=norm360(Math.atan2(tan.x,-tan.y)/RAD);                 // hold afstand, følg tangent mod næste
+    } else b._jr=null;
+  }
+  const twaDes=Math.abs(angleDiff(des,G.windDir));
+  if(b.speed<2.0 && twaDes<50){                      // anti-stage: byg fart før der peges højt
+    const sd=angleDiff(des,G.windDir)>=0?1:-1;
+    des=norm360(G.windDir+sd*62);
+  }
   const dh=angleDiff(des,b.heading);
   b.rudder=clamp(dh/38,-1,1);
 }
@@ -741,7 +838,7 @@ function finishRace(){
   const standings=computeStandings(!last? false : true);
   let rows='';
   standings.forEach((s,i)=>{
-    const me=s.name==='Dig'?' class="me"':'';
+    const me=s.name==='Emilie'?' class="me"':'';
     rows+=`<tr${me}><td>${i+1}. ${s.name}</td><td>${s.scores}</td><td>${s.total}</td></tr>`;
   });
   resultOv.classList.remove('hidden');
@@ -764,7 +861,7 @@ function finishRace(){
 }
 
 function computeStandings(applyDiscardAlways){
-  const names=['Dig',...RIVALS];
+  const names=['Emilie',...RIVALS];
   const rows=names.map(n=>{
     const sc=REG.points[n].slice();
     const racesDone=sc.length;
@@ -786,11 +883,11 @@ function computeStandings(applyDiscardAlways){
 function showSeriesResult(){
   const standings=computeStandings(true);
   const champ=standings[0];
-  const myPlace=standings.findIndex(s=>s.name==='Dig')+1;
-  const won=champ.name==='Dig';
+  const myPlace=standings.findIndex(s=>s.name==='Emilie')+1;
+  const won=champ.name==='Emilie';
   let rows='';
   standings.forEach((s,i)=>{
-    const me=s.name==='Dig'?' class="me"':'';
+    const me=s.name==='Emilie'?' class="me"':'';
     const m=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
     rows+=`<tr${me}><td>${m} ${i+1}. ${s.name}</td><td>${s.scores}</td><td>${s.total}</td></tr>`;
   });
@@ -805,7 +902,7 @@ function showSeriesResult(){
       <button class="actionbtn" id="newSeries">Sejl et nyt stævne</button>
       <div><button class="ghostbtn" id="toMenu">Til menu</button></div>
     </div>`;
-  el('newSeries').addEventListener('click',startSeries);
+  el('newSeries').addEventListener('click',showDifficulty);
   el('toMenu').addEventListener('click',()=>show('menu'));
 }
 function formatTime(s){const m=Math.floor(s/60),sec=Math.floor(s%60);return m+':'+(sec<10?'0':'')+sec;}
@@ -816,7 +913,7 @@ function formatTime(s){const m=Math.floor(s/60),sec=Math.floor(s%60);return m+':
 function drawPreview(){
   // vis hele banen centreret (til intro-skærmen bagved overlay)
   const old={cx:cam.x,cy:cam.y,z:Z};
-  cam.x=50; cam.y=65; Z=CW/132;
+  cam.x=50; cam.y=60; Z=CW/154;
   drawWater(); drawCourse(true); drawCommittee();
   Z=old.z; cam.x=old.cx; cam.y=old.cy;
 }
@@ -1077,8 +1174,8 @@ function drawRudder(){
 }
 function drawMinimap(){
   const mw=64*DPR,mh=90*DPR,mx=CW-mw-12*DPR,my=78*DPR;
-  const wx0=6,wy0=6,ww=90,wh=116;
-  const px=x=>mx+((x-wx0)/ww)*mw, py=y=>my+((y-wy0)/wh)*mh;
+  const wx0=-16,wy0=-12,ww=116,wh=144;
+  const px=x=>mx+clamp((x-wx0)/ww,0,1)*mw, py=y=>my+clamp((y-wy0)/wh,0,1)*mh;
   ctx.save();
   ctx.fillStyle='rgba(6,36,62,.55)';gaugeBox(mx-5*DPR,my-5*DPR,mw+10*DPR,mh+10*DPR,8*DPR);ctx.fill();
   // linjer
@@ -1134,7 +1231,7 @@ function updateHUD(){
   // plads
   const order=[G.boat,...G.ais].slice().sort((a,b)=>boatProgress(b)-boatProgress(a));
   const pl=order.indexOf(G.boat)+1;
-  hudPos.lastChild.nodeValue=pl+'/4';
+  hudPos.lastChild.nodeValue=pl+'/'+(G.ais.length+1);
   // instruktion
   if(G.boat.started && !G.boat.finished && G.phase==='race'){
     hudInstr.innerHTML=`<span>${LEG_INSTR[Math.min(G.boat.leg,3)]}</span>`;
