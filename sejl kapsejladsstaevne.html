@@ -313,13 +313,13 @@ const RIVAL_SAILS=['#dff7e6','#ffe2d4','#ece0ff','#dceaff'];
    skill: ganges på modstandernes fart · wind: ganges på vindspring/pust · start: ganges på starttiden
    ============================================================ */
 const DIFFS=[
-  {name:'Ælling',  emoji:'🐤', sub:'Helt rolig vind, og modstanderne sejler stille og roligt.', skill:0.80, wind:0.55, start:1.6},
-  {name:'Delfin',  emoji:'🐬', sub:'Lidt mere liv i vinden og lidt mere fart i feltet.',          skill:0.88, wind:0.72, start:1.35},
-  {name:'Søløve',  emoji:'🦭', sub:'Jævnbyrdige modstandere – nu er det rigtig kapsejlads.',      skill:0.94, wind:0.86, start:1.15},
-  {name:'Haj',     emoji:'🦈', sub:'Skarpe modstandere og krævende vind.',                        skill:1.00, wind:1.00, start:1.0},
-  {name:'Kraken',  emoji:'🐙', sub:'Havets allerhårdeste – kun for mestre!',                       skill:1.06, wind:1.18, start:0.85},
+  {name:'Ælling',  emoji:'🐤', sub:'Roligt tempo og mild vind. God tid til at bumme, hive i skøden og styre. Modstanderne sejler stille og roligt.', skill:0.70, wind:0.45, start:1.15, pace:0.58},
+  {name:'Delfin',  emoji:'🐬', sub:'Stadig roligt, men lidt mere fart og lidt mere liv i vinden.',       skill:0.80, wind:0.60, start:1.1, pace:0.72},
+  {name:'Søløve',  emoji:'🦭', sub:'Almindeligt tempo. Jævnbyrdige modstandere – nu er det kapsejlads.',   skill:0.90, wind:0.80, start:1.05, pace:0.88},
+  {name:'Haj',     emoji:'🦈', sub:'Fuld fart. Skarpe modstandere og krævende vind.',                     skill:1.00, wind:1.00, start:1.0, pace:1.0},
+  {name:'Kraken',  emoji:'🐙', sub:'Havets allerhårdeste – hurtigt tempo, kun for mestre!',                skill:1.06, wind:1.18, start:0.9, pace:1.1},
 ];
-let DIFF=3;   // standard = niveau 4 (Haj)
+let DIFF=0;   // forvalg = niveau 1 (Ælling, letteste)
 
 /* ============================================================
    STÆVNE-TILSTAND
@@ -361,10 +361,11 @@ function showIntro(){
       <p>${lvl.desc}</p>
       <p style="opacity:.8;font-size:13px">Banen: start ved bagbord side af dommerbåden ▸ kryds til topmærket ▸ læns til slagmærket (bum!) ▸ læns til bundmærket ▸ kryds i mål.</p>
       <button class="actionbtn" id="goBtn">Gør klar til start ⛵️</button>
-      <div><button class="ghostbtn" id="collBtn">Sammenstød: ${COLLIDE?'TIL':'FRA'}</button><button class="ghostbtn" id="diffBack">Skift sværhedsgrad</button></div>
+      <div><button class="ghostbtn" id="collBtn">Sammenstød: ${COLLIDE?'TIL':'FRA'}</button><button class="ghostbtn" id="markBtn">Sidde fast i mærker: ${MARKSTUCK?'TIL':'FRA'}</button><button class="ghostbtn" id="diffBack">Skift sværhedsgrad</button></div>
     </div>`;
   el('goBtn').addEventListener('click', ()=>startRace(REG.raceNo-1));
   el('collBtn').addEventListener('click', ()=>{ COLLIDE=!COLLIDE; el('collBtn').textContent='Sammenstød: '+(COLLIDE?'TIL':'FRA'); });
+  el('markBtn').addEventListener('click', ()=>{ MARKSTUCK=!MARKSTUCK; el('markBtn').textContent='Sidde fast i mærker: '+(MARKSTUCK?'TIL':'FRA'); });
   el('diffBack').addEventListener('click', showDifficulty);
   // tegn en stille forhåndsvisning af banen bagved
   resize(); drawPreview();
@@ -400,6 +401,7 @@ function sx(x){return (x-cam.x)*Z+CW/2;}
 function sy(y){return (y-cam.y)*Z+CH/2;}
 
 let COLLIDE=true;
+let MARKSTUCK=false;   // FRA som standard: spilleren sidder IKKE fast i mærker (nemmere for begyndere)
 function newBoat(x,y,o){
   const b=Object.assign({x,y,heading:0,speed:0,rudder:0,sheet:30,sailSide:1,
     started:false,leg:0,finished:false,finishTime:0,_prevY:y,gybeT:0,_wrong:false,rphase:'app',rseen:false,
@@ -418,7 +420,7 @@ function startRace(levelIdx){
   G={
     lvl, levelIdx, phase:'prestart', elapsed:0, raceT0:0,
     startTimer:lvl.startTime*DIFFS[DIFF].start, raceStarted:false, mustDip:false,
-    windDir:0, windTarget:0, shiftTimer:lvl.shiftEvery*0.5, gustPhase:Math.random()*6, windMul:DIFFS[DIFF].wind,
+    windDir:0, windTarget:0, shiftTimer:lvl.shiftEvery*0.5, gustPhase:Math.random()*6, windMul:DIFFS[DIFF].wind, pace:DIFFS[DIFF].pace,
     boat:newBoat(52,86,{heading:270,sheet:idealSheet(90),color:'#FF5CAE',sail:'#ffd9ec',name:'Emilie'}),
     ais:[],
     banner:{t:'',c:'',until:0}, tip:{t:'',until:0}, noGo:0,
@@ -532,7 +534,7 @@ function doGybe(){
 function loop(now){
   const dt=Math.min(0.05,(now-lastT)/1000); lastT=now;
   if(CW<2) resize();
-  if(G){ if(G.phase!=='done') update(dt); draw(); updateHUD(); }
+  if(G){ if(G.phase!=='done') update(dt*(G.pace||1)); draw(); updateHUD(); }
   raf=requestAnimationFrame(loop);
 }
 
@@ -586,17 +588,19 @@ function update(dt){
     }
   }
 
-  // faste bøjer: sejler man ind i et mærke sidder man fast (uanset om sammenstød er til/fra)
+  // faste bøjer: sejler man ind i et mærke sidder man fast (kun spilleren, kun når slået til)
   {
     const solids=[MARKS.top,MARKS.slag,MARKS.bund,PIN_START,PIN_FIN];
     for(const bo of [G.boat,...G.ais]){
       if(bo.finished) continue;
+      const isPlayer=(bo===G.boat);
+      if(isPlayer && !MARKSTUCK) continue;   // spilleren kan sejle frit forbi mærkerne
       for(const m of solids){
         const dx=bo.x-m.x, dy=bo.y-m.y, d=Math.hypot(dx,dy), hit=1.9;
         if(d<hit && d>0.0001){
           const nx=dx/d, ny=dy/d;
-          bo.x=m.x+nx*hit; bo.y=m.y+ny*hit;   // ingen kan trænge igennem en bøje
-          if(bo===G.boat){
+          bo.x=m.x+nx*hit; bo.y=m.y+ny*hit;   // ingen trænger igennem en bøje
+          if(isPlayer){
             bo.speed*=0.2;                      // spilleren sidder fast – mister farten
             if(!G._markT||G.elapsed-G._markT>1.2){ setBanner('Du sejlede ind i mærket! 🟠','warn',1.2); setTip('Styr uden om bøjen for at komme fri!',1.8); G._markT=G.elapsed; }
           } else bo.speed*=0.9;                 // modstandere strejfer kun
